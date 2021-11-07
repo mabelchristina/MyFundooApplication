@@ -152,3 +152,17 @@ END CATCH
 
 exec spUserResetPassword
 'Jane@gmail.com','Jane1','jane1'
+
+
+
+
+CREATE TABLE Notes
+(
+NotesId int primary key not null identity(1,1),  
+Title Nvarchar(50),  
+Body Nvarchar(50),  
+Reminder Nvarchar(50), 
+Color varchar(10), 
+Archive Nvarchar(50),  
+UserId int FOREIGN KEY REFERENCES UserInfo(UserId)
+)
