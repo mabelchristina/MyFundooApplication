@@ -93,7 +93,7 @@ namespace RepositoryLayer.Services
             }
         }
 
-        public User UserLogin(string Email, string Password)
+        public User UserLogin(Login login)
         {
             try
             {
@@ -102,18 +102,17 @@ namespace RepositoryLayer.Services
                 string storedProcedure = "spLogin";
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    connection.Open();
+                    using (SqlCommand cmd = new SqlCommand(storedProcedure, connection))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
 
-                    SqlCommand cmd = new SqlCommand(storedProcedure, connection);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@Email", Email);
-                    cmd.Parameters.AddWithValue("@Password", Password);
-
-                    SqlParameter outputPara = new SqlParameter();
-                    SqlDataAdapter adapter = new SqlDataAdapter(storedProcedure, connection);
-                    adapter.Fill(dataSet, "UserInfo");
-                    connection.Open();
+                        cmd.Parameters.AddWithValue("@Email", login.Email);
+                        cmd.Parameters.AddWithValue("@Password", login.Password);
+                        using (var adapter = new SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(dataSet, "UserInfo");
+                        }
+                    }
 
                     foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
                     {
@@ -123,10 +122,9 @@ namespace RepositoryLayer.Services
                         user.City = (string)row["City"];
                         user.MobileNumber = (string)row["MobileNumber"];
                         user.Email = (string)row["Email"];
-                        user.Password = "************";
+                        user.Password = (string) row ["Password"];
 
                     }
-                    //var result = JsonConvert.SerializeObject(dataSet.Tables["UserInfo"]);
 
                     connection.Close();
                 }
@@ -137,24 +135,38 @@ namespace RepositoryLayer.Services
                 throw;
             }
         }
-        public ForgotPassword UserForgotPassword(ForgotPassword forgotPassword)
+        public User UserForgotPassword(string FirstName,string Email)
         {
             try
             {
                 SqlConnection connection = new SqlConnection(_connectionString);
                 DataSet dataSet = new DataSet();
+                User user = new User();
+                string sp = "spUserForgotPassword";
                 using (connection)
                 {
                     connection.Open();
-                    SqlDataAdapter adapter = new SqlDataAdapter("spUserForgotPassword", connection);
-                    adapter.Fill(dataSet, "UserInfo");
-                    foreach (DataRow dataRow in dataSet.Tables["UserInfo"].Rows)
+                    SqlCommand cmd = new SqlCommand(sp, connection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@FirstName", FirstName);
+                    cmd.Parameters.AddWithValue("@Email", Email);
+                    using (var adapter = new SqlDataAdapter(cmd))
                     {
-                        Console.WriteLine("\t" + dataRow["Firstname"] + "  " + dataRow["Email"] + " ");
+                        adapter.Fill(dataSet, "UserInfo");
+                    }
+                    foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
+                    {
+                        user.UserId = (int)row["UserId"];
+                        user.FirstName = (string)row["FirstName"];
+                        user.LastName = (string)row["LastName"];
+                        user.City = (string)row["City"];
+                        user.MobileNumber = (string)row["MobileNumber"];
+                        user.Email = (string)row["Email"];
+                        user.Password = "************";
                     }
                     connection.Close();
                 }
-                return forgotPassword;
+                return user;
                 
             }
             catch (Exception e)
@@ -163,29 +175,44 @@ namespace RepositoryLayer.Services
             }
 
         }
-        public void UserResetPassword(string Email, string CurrentPassword, string NewPassword)
+        public User UserResetPassword(string Email, string CurrentPassword, string NewPassword)
         {
             try
             {
                 SqlConnection connection = new SqlConnection(_connectionString);
                 DataSet dataSet = new DataSet();
+                User user = new User();
+                string sp = "spUserResetPassword";
                 using (connection)
                 {
                     connection.Open();
-                    SqlDataAdapter adapter = new SqlDataAdapter("spUserResetPassword", connection);
-                    adapter.Fill(dataSet, "UserInfo");
-                    foreach (DataRow dataRow in dataSet.Tables["UserInfo"].Rows)
+                    SqlCommand cmd = new SqlCommand(sp, connection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Email", Email);
+                    cmd.Parameters.AddWithValue("@CurrentPassword", CurrentPassword);
+                    cmd.Parameters.AddWithValue("@NewPassword", NewPassword);
+                    using (var adapter = new SqlDataAdapter(cmd))
                     {
-                        Console.WriteLine("\t" + dataRow["Email"] + "  " + dataRow["CurrentPassword"] + " " + dataRow["NewPassword"] + " ");
+                        adapter.Fill(dataSet, "UserInfo");
+                    }
+                    foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
+                    {
+                        user.UserId = (int)row["UserId"];
+                        user.FirstName = (string)row["FirstName"];
+                        user.LastName = (string)row["LastName"];
+                        user.City = (string)row["City"];
+                        user.MobileNumber = (string)row["MobileNumber"];
+                        user.Email = (string)row["Email"];
+                        user.Password = "************";
                     }
                     connection.Close();
                 }
+                return user;
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
         }
-
     }
 }

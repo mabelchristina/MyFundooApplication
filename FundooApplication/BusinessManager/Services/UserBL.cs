@@ -26,14 +26,14 @@ namespace BusinessManager.Services
             }
         }
 
-        public User UserLogin(string Email, string Password)
+        public User UserLogin(Login login)
         {
-            return dataOperations.UserLogin(Email, Password);
+            return dataOperations.UserLogin(login);
         }
 
-        ForgotPassword IUserBL.UserForgotPassword(ForgotPassword forgotPassword)
+        User IUserBL.UserForgotPassword(string FirstName, string Email)
         {
-           return dataOperations.UserForgotPassword(forgotPassword);
+            return dataOperations.UserForgotPassword(FirstName, Email);
         }
 
         User IUserBL.UserRegister(User user)
@@ -41,9 +41,9 @@ namespace BusinessManager.Services
             return dataOperations.UserRegister(user);
         }
 
-        void IUserBL.UserResetPassword(string Email, string CurrentPassword, string NewPassword)
+        User IUserBL.UserResetPassword(string Email, string CurrentPassword, string NewPassword)
         {
-            dataOperations.UserResetPassword(Email, CurrentPassword, NewPassword);
+            return dataOperations.UserResetPassword(Email, CurrentPassword, NewPassword);
         }
     }
 }

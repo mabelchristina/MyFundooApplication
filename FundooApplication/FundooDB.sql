@@ -14,7 +14,13 @@ Email Nvarchar(50),
 Password Nvarchar(50)
 ) 
 
+ALTER TABLE UserInfo
+ADD CONSTRAINT UC_Email UNIQUE (Email);
+
 SELECT * FROM UserInfo
+
+delete from UserInfo
+where Email='niki@gmail.com'
 
 
 INSERT INTO UserInfo (FirstName, LastName, City) VALUES('Jane', 'Althya', 'Dubai')
@@ -61,7 +67,7 @@ alter PROCEDURE spRegister
  @Password Nvarchar(50))
 As
 Begin try
-INSERT INTO UserInfo (FirstName, LastName, City,Mobilenumber,Email,Password) VALUES('kiran', 'raj', 'blore','9638527410','kir@gmail.com','kir@123')
+INSERT INTO UserInfo (FirstName, LastName, City,Mobilenumber,Email,Password) VALUES(@Firstname,@Lastname,@City,@Mobilenumber,@Email,@Password)
 end try
 Begin catch
 SELECT
@@ -81,7 +87,7 @@ alter PROCEDURE spLogin
 (@Email Nvarchar(50), @Password Nvarchar(50))
 As
 Begin try
-select FirstName,LastName,City,Mobilenumber from UserInfo where (Email = @Email AND Password = @Password)
+select * from UserInfo where Email = @Email AND Password = @Password
 end try
 Begin catch
 SELECT
@@ -98,11 +104,11 @@ exec spLogin
 --- Procedure for forgot password
 
 alter procedure spUserForgotPassword
-(@Firstname Nvarchar(50),
+(@FirstName Nvarchar(50),
 @Email Nvarchar(50))
 As 
 Begin try
-select Password from UserInfo where Firstname=@Firstname and Email=@Email
+select Password from UserInfo where @FirstName=FirstName and @Email=Email
 end try
 Begin catch
 SELECT
@@ -113,9 +119,8 @@ SELECT
     ERROR_MESSAGE() AS ErrorMessage;
 END CATCH  
 
-
 exec spUserForgotPassword
-'Jane','Jane@gmail.com'
+'Jemmy','Jemmy@gmail.com'
 
 --- Procedure to reset password
 

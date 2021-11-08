@@ -8,9 +8,9 @@ namespace RepositoryLayer.Interfaces
     public interface IUserRL
     {
         List<User> GetUsers();
-         User UserLogin(string Email, string password);
+         User UserLogin(Login login);
         public User UserRegister(User user);
-        public ForgotPassword UserForgotPassword(ForgotPassword forgotPassword);
-        public void UserResetPassword(string Email, string CurrentPassword, string NewPassword);
+        public User UserForgotPassword(string FirstName, string Email);
+        public User UserResetPassword(string Email, string CurrentPassword, string NewPassword);
     }
 }
