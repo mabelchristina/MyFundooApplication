@@ -28,22 +28,54 @@ namespace BusinessManager.Services
 
         public User UserLogin(Login login)
         {
-            return dataOperations.UserLogin(login);
+            try
+            {
+                return dataOperations.UserLogin(login);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         User IUserBL.UserForgotPassword(string FirstName, string Email)
         {
-            return dataOperations.UserForgotPassword(FirstName, Email);
+            try
+            {
+                return dataOperations.UserForgotPassword(FirstName, Email);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         User IUserBL.UserRegister(User user)
         {
-            return dataOperations.UserRegister(user);
+            try
+            {
+                return dataOperations.UserRegister(user);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         User IUserBL.UserResetPassword(string Email, string CurrentPassword, string NewPassword)
         {
-            return dataOperations.UserResetPassword(Email, CurrentPassword, NewPassword);
+            try
+            {
+                return dataOperations.UserResetPassword(Email, CurrentPassword, NewPassword);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
