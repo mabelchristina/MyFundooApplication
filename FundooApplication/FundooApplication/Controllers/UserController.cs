@@ -40,7 +40,6 @@ namespace FundooApplication.Controllers
         }
 
         [HttpPost("Login")]
-        [NonAction]
         public ActionResult<User> UserLogin(Login login)
         {
             try
@@ -63,17 +62,19 @@ namespace FundooApplication.Controllers
 
             return Ok(token);
         }
-
-
         [Route("Register")]
         [HttpPost("{UserId}")]
-        [NonAction]
+ 
         public ActionResult<User> UserRegister(User user)
         {
+            if (user == null)
+            {
+                return BadRequest("User is null.");
+            }
             try
             {
                 User userData = this.userDataAccess.UserRegister(user);
-                return this.Ok(new { Success = true, Message = "Get request is successful", Data = userData });
+                return this.Ok(new { Success = true, Message = "New User registration is successful", Data = userData });
             }
             catch (Exception e)
             {
