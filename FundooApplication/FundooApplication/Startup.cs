@@ -38,6 +38,9 @@ namespace FundooApplication
             services.AddControllers();
             services.AddSingleton<IUserBL,UserBL>();
             services.AddSingleton<IUserRL, UserRL>();
+            services.AddSingleton<INotesBL, NotesBL>();
+            services.AddSingleton<INotesRL, NotesRL>();
+
             services.AddSwaggerGen();
 
             var tokenKey = Configuration.GetValue<string>("TokenKey");
@@ -74,10 +77,7 @@ namespace FundooApplication
             app.UseSwagger();
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.)
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My fundoo API");
-            });
+            app.UseSwaggerUI();
 
 
             app.UseHttpsRedirection();

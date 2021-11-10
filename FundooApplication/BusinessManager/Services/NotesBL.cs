@@ -1,36 +1,25 @@
 ﻿using BusinessManager.Interfaces;
 using CommonLayer.Models;
 using RepositoryLayer.Interfaces;
+using RepositoryLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace BusinessManager.Services
 {
-   public class UserBL:IUserBL
+    public class NotesBL : INotesBL
     {
-        private IUserRL dataOperations;
-        public UserBL(IUserRL dataOperations)
+        private INotesRL dataOperations;
+        public NotesBL(INotesRL dataOperations)
         {
             this.dataOperations = dataOperations;
         }
-        public List<User> GetAllUsers()
+        public Notes AddNotes(Notes note)
         {
             try
             {
-                return this.dataOperations.GetUsers();
-            }
-            catch(Exception )
-            {
-                throw;
-            }
-        }
-
-        public User UserLogin(Login login)
-        {
-            try
-            {
-                return dataOperations.UserLogin(login);
+                return dataOperations.AddNotes(note);
             }
             catch (Exception)
             {
@@ -39,11 +28,12 @@ namespace BusinessManager.Services
             }
         }
 
-        User IUserBL.UserForgotPassword(string FirstName, string Email)
+
+        List<Notes> INotesBL.GetAllUsersNotes()
         {
             try
             {
-                return dataOperations.UserForgotPassword(FirstName, Email);
+                return dataOperations.GetAllUsersNotes();
             }
             catch (Exception)
             {
@@ -52,11 +42,11 @@ namespace BusinessManager.Services
             }
         }
 
-        User IUserBL.UserRegister(User user)
+        Notes INotesBL.UpdateNote(Notes note)
         {
             try
             {
-                return dataOperations.UserRegister(user);
+                return dataOperations.UpdateNote(note);
             }
             catch (Exception)
             {
@@ -65,11 +55,11 @@ namespace BusinessManager.Services
             }
         }
 
-        void IUserBL.UserResetPassword(ResetPassword reset)
+        void INotesBL.DeleteNote(Notes note)
         {
             try
             {
-                this.dataOperations.UserResetPassword(reset);
+                dataOperations.DeleteNote(note);
             }
             catch (Exception)
             {

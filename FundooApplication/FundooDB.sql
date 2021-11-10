@@ -122,10 +122,9 @@ END CATCH
 exec spUserForgotPassword
 'Jemmy','Jemmy@gmail.com'
 
---- Procedure to reset password
+--- Procedure to Reset password
 
-create procedure spUserResetPassword
-
+alter procedure spUserResetPassword
 (@Email varchar(50),
 @CurrentPassword varchar(50),
 @NewPassword varchar(50))
@@ -138,8 +137,7 @@ Begin try
   Update UserInfo
   Set Password = @newpassword
   where Email = @Email
-  
-  Select 1 as IsPasswordChanged
+    Select 1 as IsPasswordChanged
  End
  Else
  Begin
@@ -153,21 +151,123 @@ SELECT
     ERROR_PROCEDURE() AS ErrorProcedure,
     ERROR_LINE() AS ErrorLine,
     ERROR_MESSAGE() AS ErrorMessage;
-END CATCH  
+END CATCH e to reset password
+
+ 
 
 exec spUserResetPassword
-'Jane@gmail.com','Jane1','jane1'
+'Jane@gmail.com','Jane','Janey'
 
 
+-------------------------------------------------------------------------------
 
-
-CREATE TABLE Notes
+CREATE TABLE Note
 (
 NotesId int primary key not null identity(1,1),  
 Title Nvarchar(50),  
-Body Nvarchar(50),  
-Reminder Nvarchar(50), 
-Color varchar(10), 
-Archive Nvarchar(50),  
+Description Nvarchar(50),  
+Reminder Nvarchar(50),  
 UserId int FOREIGN KEY REFERENCES UserInfo(UserId)
 )
+
+
+
+select * from Note
+
+insert into Note (Title,Description,Reminder,UserId)values('To-Do','Shopping','Remind at 2',1)
+
+
+----Procedure for getting all notes
+
+alter PROCEDURE spGetAllNote
+As
+Begin try
+Select * from Note
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spGetAllNote
+
+----Procedure for adding a note
+
+create PROCEDURE spAddUserNotes
+(@Title Nvarchar(50),
+@Description Nvarchar(50),
+@Reminder Nvarchar(50),
+@UserID Nvarchar(50))
+As
+Begin try
+INSERT INTO Note(Title,Description,Reminder,UserId) VALUES(@Title,@Description,@Reminder,@UserId)
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spAddUserNotes
+'Alarm','Nap','Remind at 4',1
+
+-------Procedure for updating note
+
+create procedure spUpdateNotes
+(
+@NotesId int,
+@Title varchar(20),
+@Description varchar(50),
+@Reminder varchar(50)
+)
+As 
+Begin try
+update Note
+set Title=@Title,
+	Description=@Description,
+	Reminder=@Reminder
+where NotesId=@NotesId
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spUpdateNotes
+1,'TODO','Shop','Alert at 5'
+
+
+---Procedure to delete a note
+
+Create procedure spDeleteNote
+(
+@Title varchar(20)
+)
+As 
+Begin try
+delete from Note where Title=@Title 
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH  
+
+exec spDeleteNote
+'alarm'
+
+Select * from Note

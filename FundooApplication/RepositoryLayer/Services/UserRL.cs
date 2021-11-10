@@ -40,10 +40,8 @@ namespace RepositoryLayer.Services
                         user.City = (string)row["City"];
                         user.MobileNumber = (string)row["MobileNumber"];
                         user.Email = (string)row["Email"];
-
                         usersList.Add(user);
                     }
-                    // result = JsonConvert.SerializeObject(dataSet.Tables["UserInfo"]);
 
                     connection.Close();
                 }
@@ -175,7 +173,7 @@ namespace RepositoryLayer.Services
             }
 
         }
-        public User UserResetPassword(string Email, string CurrentPassword, string NewPassword)
+        public void UserResetPassword(ResetPassword reset)
         {
             try
             {
@@ -188,31 +186,22 @@ namespace RepositoryLayer.Services
                     connection.Open();
                     SqlCommand cmd = new SqlCommand(sp, connection);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Email", Email);
-                    cmd.Parameters.AddWithValue("@CurrentPassword", CurrentPassword);
-                    cmd.Parameters.AddWithValue("@NewPassword", NewPassword);
+                    cmd.Parameters.AddWithValue("@Email", reset.Email);
+                    cmd.Parameters.AddWithValue("@CurrentPassword", reset.CurrentPassword);
+                    cmd.Parameters.AddWithValue("@NewPassword",reset.NewPassword);
                     using (var adapter = new SqlDataAdapter(cmd))
                     {
                         adapter.Fill(dataSet, "UserInfo");
                     }
-                    foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
-                    {
-                        user.UserId = (int)row["UserId"];
-                        user.FirstName = (string)row["FirstName"];
-                        user.LastName = (string)row["LastName"];
-                        user.City = (string)row["City"];
-                        user.MobileNumber = (string)row["MobileNumber"];
-                        user.Email = (string)row["Email"];
-                        user.Password = "************";
-                    }
                     connection.Close();
                 }
-                return user;
+               
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
         }
+
     }
 }

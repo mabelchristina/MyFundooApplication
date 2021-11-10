@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using RepositoryLayer.Interfaces;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,9 +15,11 @@ namespace RepositoryLayer.Services
 
         IDictionary<string, string> users = new Dictionary<string, string>
         {
-            { "Jane@gmail.com", "jane1" },
-            { "Jemmy@gmail.com", "Jemmy2" }
+            { "Jane@gmail.com", "Jane" },
+            { "Jemmy@gmail.com", "Jemmy2" },
+            { "vic@gmail.com","vic@123" }
         };
+
 
         private readonly string tokenKey;
 
@@ -38,9 +41,10 @@ namespace RepositoryLayer.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, username)
+                    new Claim("username", username),
+                    new Claim("password", password)
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)

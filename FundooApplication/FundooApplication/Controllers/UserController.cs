@@ -1,5 +1,6 @@
 ﻿using BusinessManager.Interfaces;
 using CommonLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RepositoryLayer.Interfaces;
@@ -24,7 +25,6 @@ namespace FundooApplication.Controllers
             
         }
         [HttpGet]
-        
         public ActionResult<List<User>> GetAllUsers()
         {
             Response httpResponse = new Response();
@@ -39,32 +39,9 @@ namespace FundooApplication.Controllers
             }
         }
 
-        [HttpPost("Login")]
-        public ActionResult<User> UserLogin(Login login)
-        {
-            try
-            {
-                User userData = this.userDataAccess.UserLogin(login) ;
-                return this.Ok(new { Success = true, Message = "Get request is successful", Data = userData });
-            }
-            catch (Exception e)
-            {
-                return this.BadRequest(new { Success = false, Message = e.Message });
-            }
-        }
-        [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] UserCredentials userCred)
-        {
-            var token = jWTAuthenticationManager.Authenticate(userCred.username, userCred.password);
-
-            if (token == null)
-                return Unauthorized();
-
-            return Ok(token);
-        }
+       [Authorize]
         [Route("Register")]
-        [HttpPost("{UserId}")]
- 
+        [HttpPost]
         public ActionResult<User> UserRegister(User user)
         {
             if (user == null)
@@ -81,9 +58,26 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
+        [Authorize]
+        [HttpPost("Login")]
+        public ActionResult<User> UserLogin(Login login)
+        {
+            try
+            {
+                User userData = this.userDataAccess.UserLogin(login);
+                var token = jWTAuthenticationManager.Authenticate(login.Email, login.Password);
+                if (token == null)
+                    return Unauthorized();
+                return this.Ok(new { Success = true, Message = "User logged in successful", Data = userData, token });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Success = false, Message = e.Message });
+            }
+        }
+        [Authorize]
         [Route("ForgotPassword")]
         [HttpPost]
-        [NonAction]
         public ActionResult<User> UserForgotPassword(string FirstName, string Email)
         {
             try
@@ -96,16 +90,15 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-
+        [Authorize]
         [Route("ResetPassword")]
         [HttpPost]
-        [NonAction]
-        public ActionResult<User> UserResetPassword(string Email, string CurrentPassword, string NewPassword)
+        public ActionResult<User> UserResetPassword(ResetPassword reset)
         {
             try
             {
-                User userData = this.userDataAccess.UserResetPassword(Email,CurrentPassword,NewPassword);
-                return this.Ok(new { Success = true, Message = "Get request is successful", Data = userData });
+                 userDataAccess.UserResetPassword(reset);
+                return this.Ok(new { Success = true, Message = "Password reset is successful" });
             }
             catch (Exception e)
             {
