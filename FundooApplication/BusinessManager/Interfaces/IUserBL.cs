@@ -8,7 +8,7 @@ namespace BusinessManager.Interfaces
     public interface IUserBL
     {
         List<User> GetAllUsers();
-        User UserLogin(Login login);
+        public User UserLogin(Login login);
         public User UserRegister(User user);
         public User UserForgotPassword(string FirstName, string Email);
         public void UserResetPassword(ResetPassword reset);

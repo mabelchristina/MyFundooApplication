@@ -65,8 +65,8 @@ namespace FundooApplication.Controllers
             try
             {
                 User userData = this.userDataAccess.UserLogin(login);
-                var token = jWTAuthenticationManager.Authenticate(login.Email, login.Password);
-                if (token == null)
+               var token = jWTAuthenticationManager.Authenticate(login);
+              if (token == null)
                     return Unauthorized();
                 return this.Ok(new { Success = true, Message = "User logged in successful", Data = userData, token });
             }

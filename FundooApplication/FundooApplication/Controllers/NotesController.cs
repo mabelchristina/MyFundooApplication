@@ -1,5 +1,6 @@
 ﻿using BusinessManager.Interfaces;
 using CommonLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -18,7 +19,7 @@ namespace FundooApplication.Controllers
         {
             this.userDataAccess = userDataAccess;
         }
-
+        //[Authorize]
         [HttpGet]
         public ActionResult<List<User>> GetAllUserNotes()
         {

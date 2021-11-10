@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using CommonLayer.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,6 +11,6 @@ namespace RepositoryLayer.Interfaces
 {
     public interface IAuthenticationManager
     {
-        string Authenticate(string username, string password);
+        public string Authenticate(Login login);
     }
 }

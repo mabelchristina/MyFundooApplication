@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using CommonLayer.Models;
+using Microsoft.IdentityModel.Tokens;
 using RepositoryLayer.Interfaces;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
@@ -13,14 +14,6 @@ namespace RepositoryLayer.Services
     public class JWTAuthenticationManager : IAuthenticationManager
     {
 
-        IDictionary<string, string> users = new Dictionary<string, string>
-        {
-            { "Jane@gmail.com", "Jane" },
-            { "Jemmy@gmail.com", "Jemmy2" },
-            { "vic@gmail.com","vic@123" }
-        };
-
-
         private readonly string tokenKey;
 
         public JWTAuthenticationManager(string tokenKey)
@@ -28,12 +21,8 @@ namespace RepositoryLayer.Services
             this.tokenKey = tokenKey;
         }
 
-        public string Authenticate(string username, string password)
+        public string Authenticate(Login login)
         {
-            if (!users.Any(u => u.Key == username && u.Value == password))
-            {
-                return null;
-            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(tokenKey);
@@ -41,10 +30,10 @@ namespace RepositoryLayer.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim("username", username),
-                    new Claim("password", password)
+                    new Claim("Email",login.Email),
+                    new Claim("Password",login.Password)
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(15),
+                Expires = DateTime.UtcNow.AddMinutes(30),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)

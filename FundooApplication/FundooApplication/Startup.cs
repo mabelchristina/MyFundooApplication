@@ -41,7 +41,33 @@ namespace FundooApplication
             services.AddSingleton<INotesBL, NotesBL>();
             services.AddSingleton<INotesRL, NotesRL>();
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(setup =>
+            {
+                // Include 'SecurityScheme' to use JWT Authentication
+                var jwtSecurityScheme = new OpenApiSecurityScheme
+                {
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Name = "JWT Authentication",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Description = "enter JWT Bearer token on textbox below!",
+
+                    Reference = new OpenApiReference
+                    {
+                        Id = JwtBearerDefaults.AuthenticationScheme,
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+
+                setup.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+
+                setup.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { jwtSecurityScheme, Array.Empty<string>() }
+                });
+
+            });
 
             var tokenKey = Configuration.GetValue<string>("TokenKey");
             var key = Encoding.ASCII.GetBytes(tokenKey);
