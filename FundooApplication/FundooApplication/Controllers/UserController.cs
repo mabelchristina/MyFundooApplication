@@ -39,7 +39,7 @@ namespace FundooApplication.Controllers
             }
         }
 
-       [Authorize]
+       
         [Route("Register")]
         [HttpPost]
         public ActionResult<User> UserRegister(User user)
@@ -58,7 +58,7 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-        [Authorize]
+        
         [HttpPost("Login")]
         public ActionResult<User> UserLogin(Login login)
         {

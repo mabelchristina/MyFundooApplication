@@ -19,7 +19,7 @@ namespace FundooApplication.Controllers
         {
             this.userDataAccess = userDataAccess;
         }
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public ActionResult<List<User>> GetAllUserNotes()
         {
@@ -34,7 +34,7 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-
+        [Authorize]
         [HttpPost("AddNotes")]
         public ActionResult<Notes> AddNotes(Notes note)
         {
@@ -48,6 +48,7 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
+        [Authorize]
         [HttpPost("UpdateNotes")]
         public ActionResult<Notes> UpdateNotes(Notes note)
         {
@@ -61,6 +62,7 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
+        [Authorize]
         [HttpPost("DeleteNotes")]
         public ActionResult<Notes> DeleteNotes(Notes note)
         {
