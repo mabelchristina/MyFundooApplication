@@ -4,6 +4,7 @@ using RepositoryLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BusinessManager.Services
 {
@@ -38,19 +39,28 @@ namespace BusinessManager.Services
                 throw;
             }
         }
-
-        User IUserBL.UserForgotPassword(string FirstName, string Email)
+        
+         async Task<string> IUserBL.UserForgotPassword(ForgotPassword forgotPassword)
         {
             try
             {
-                return dataOperations.UserForgotPassword(FirstName, Email);
+                //// If checks forgotpassword model details is empty or not 
+                if (forgotPassword != null)
+                {
+                    var result = await this.dataOperations.UserForgotPassword(forgotPassword);
+                    return result;
+                }
+                else
+                {
+                    throw new Exception("User Email is not valid");
+                }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-
-                throw;
+                throw exception;
             }
         }
+ 
 
         User IUserBL.UserRegister(User user)
         {

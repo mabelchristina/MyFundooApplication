@@ -21,19 +21,20 @@ namespace RepositoryLayer.Services
             this.tokenKey = tokenKey;
         }
 
-        public string Authenticate(Login login)
+        public string Authenticate(User user)
         {
-
+            ResetPassword reset = new ResetPassword();
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(tokenKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim("Email",login.Email),
-                    new Claim("Password",login.Password)
+                    new Claim("Email",user.Email),
+                   // new Claim("Email",reset.Email),
+                    new Claim("UserId",user.UserId.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)

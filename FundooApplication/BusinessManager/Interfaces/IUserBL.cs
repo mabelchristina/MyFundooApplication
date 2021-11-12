@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BusinessManager.Interfaces
 {
@@ -10,7 +11,7 @@ namespace BusinessManager.Interfaces
         List<User> GetAllUsers();
         public User UserLogin(Login login);
         public User UserRegister(User user);
-        public User UserForgotPassword(string FirstName, string Email);
+        public Task<string> UserForgotPassword(ForgotPassword forgotPassword);
         public void UserResetPassword(ResetPassword reset);
     }
 }

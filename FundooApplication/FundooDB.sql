@@ -65,21 +65,23 @@ alter PROCEDURE spRegister
 @Mobilenumber Nvarchar(50),
 @Email Nvarchar(50),
  @Password Nvarchar(50))
-As
-Begin try
-INSERT INTO UserInfo (FirstName, LastName, City,Mobilenumber,Email,Password) VALUES(@Firstname,@Lastname,@City,@Mobilenumber,@Email,@Password)
-end try
-Begin catch
-SELECT
-    ERROR_NUMBER() AS ErrorNumber,
-    ERROR_STATE() AS ErrorState,
-    ERROR_PROCEDURE() AS ErrorProcedure,
-    ERROR_LINE() AS ErrorLine,
-    ERROR_MESSAGE() AS ErrorMessage;
-END CATCH 
+as
+begin
+declare @res int
+select @res = count(UserId) from UserInfo where Email = @Email
+if (@res<>0)
+begin
+Raiserror('Email Id already registered with another user id.',16,1)
+end
+else
+begin
+Insert into UserInfo values (@FirstName, @LastName, @City, @Mobilenumber, @Email, @Password)
+end
+end
+ 
 
 exec spRegister
-'kiran', 'raj', 'blore','9638527410','kir@gmail.com','kir@123'
+'Terry', 'John', 'Kerala','7894561487','Terry@gmail.com','Terry@123'
 
 
 -- Procedure to login to particular user
@@ -151,14 +153,14 @@ SELECT
     ERROR_PROCEDURE() AS ErrorProcedure,
     ERROR_LINE() AS ErrorLine,
     ERROR_MESSAGE() AS ErrorMessage;
-END CATCH e to reset password
+END CATCH 
 
  
 
 exec spUserResetPassword
 'Jane@gmail.com','Jane','Janey'
 
-
+select * from UserInfo
 -------------------------------------------------------------------------------
 
 CREATE TABLE Note

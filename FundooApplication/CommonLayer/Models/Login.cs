@@ -9,9 +9,5 @@ namespace CommonLayer.Models
         public string Email { get; set; }
         public string Password { get; set; }
 
-        public bool Any(Func<object, bool> p)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

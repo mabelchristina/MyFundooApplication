@@ -35,7 +35,7 @@ namespace FundooApplication.Controllers
             }
         }
         [Authorize]
-        [HttpPost("AddNotes")]
+        [HttpPost]
         public ActionResult<Notes> AddNotes(Notes note)
         {
             try
@@ -49,7 +49,7 @@ namespace FundooApplication.Controllers
             }
         }
         [Authorize]
-        [HttpPost("UpdateNotes")]
+        [HttpPut]
         public ActionResult<Notes> UpdateNotes(Notes note)
         {
             try
@@ -63,7 +63,7 @@ namespace FundooApplication.Controllers
             }
         }
         [Authorize]
-        [HttpPost("DeleteNotes")]
+        [HttpDelete]
         public ActionResult<Notes> DeleteNotes(Notes note)
         {
             try

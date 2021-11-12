@@ -11,6 +11,6 @@ namespace RepositoryLayer.Interfaces
 {
     public interface IAuthenticationManager
     {
-        public string Authenticate(Login login);
+        public string Authenticate(User user);
     }
 }

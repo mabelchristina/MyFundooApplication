@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RepositoryLayer.Interfaces
 {
@@ -10,7 +11,7 @@ namespace RepositoryLayer.Interfaces
         public List<User> GetUsers();
         public User UserLogin(Login login);
         public User UserRegister(User user);
-        public User UserForgotPassword(string FirstName, string Email);
+        Task<string> UserForgotPassword(ForgotPassword forgotPassword);
         public void UserResetPassword(ResetPassword reset);
     }
 }

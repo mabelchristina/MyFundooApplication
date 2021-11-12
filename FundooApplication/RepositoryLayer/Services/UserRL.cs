@@ -1,12 +1,18 @@
 ﻿using CommonLayer.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RepositoryLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RepositoryLayer.Services
 {
@@ -94,7 +100,7 @@ namespace RepositoryLayer.Services
         public User UserLogin(Login login)
         {
             try
-            {
+            {   
                 DataSet dataSet = new DataSet();
                 User user = new User();
                 string storedProcedure = "spLogin";
@@ -120,8 +126,7 @@ namespace RepositoryLayer.Services
                         user.City = (string)row["City"];
                         user.MobileNumber = (string)row["MobileNumber"];
                         user.Email = (string)row["Email"];
-                        user.Password = (string) row ["Password"];
-
+                        user.Password = (string)row["Password"];
                     }
 
                     connection.Close();
@@ -133,7 +138,7 @@ namespace RepositoryLayer.Services
                 throw;
             }
         }
-        public User UserForgotPassword(string FirstName,string Email)
+        public async Task<string> UserForgotPassword(ForgotPassword forgotPassword)
         {
             try
             {
@@ -143,40 +148,65 @@ namespace RepositoryLayer.Services
                 string sp = "spUserForgotPassword";
                 using (connection)
                 {
-                    connection.Open();
-                    SqlCommand cmd = new SqlCommand(sp, connection);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@FirstName", FirstName);
-                    cmd.Parameters.AddWithValue("@Email", Email);
-                    using (var adapter = new SqlDataAdapter(cmd))
+                    using (SqlCommand cmd = new SqlCommand(sp, connection))
                     {
-                        adapter.Fill(dataSet, "UserInfo");
-                    }
-                    foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
-                    {
-                        user.UserId = (int)row["UserId"];
-                        user.FirstName = (string)row["FirstName"];
-                        user.LastName = (string)row["LastName"];
-                        user.City = (string)row["City"];
-                        user.MobileNumber = (string)row["MobileNumber"];
-                        user.Email = (string)row["Email"];
-                        user.Password = "************";
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@FirstName", forgotPassword.Firstname);
+                        cmd.Parameters.AddWithValue("@Email", forgotPassword.Email);
+                        using (var adapter = new SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(dataSet, "UserInfo");
+                        }
                     }
                     connection.Close();
                 }
-                return user;
-                
+                if (forgotPassword.Email != null)
+                {
+                    ////here we create object of MsmqTokenSender which is present in Common-Layer
+                    MsmqTokenSender msmq = new MsmqTokenSender();
+                    string key = "This is my SecretKey which is used for security purpose";
+
+                    ////Here generate encrypted key and result store in security key
+                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
+                    //// here using securitykey and algorithm(security) the creadintails is generate(SigningCredentials present in Token)
+                    var creadintials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+                    var claims = new[]
+                    {
+                    new Claim("Email", forgotPassword.Email),
+                };
+
+                    var token = new JwtSecurityToken("Security token", "https://Test.com",
+                        claims,
+                        DateTime.UtcNow,
+                        expires: DateTime.Now.AddDays(1),
+                        signingCredentials: creadintials);
+
+                    var NewToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+                    //// Send the email and password to Method in MsmqTokenSender
+                    msmq.SendMsmqToken(forgotPassword.Email, NewToken.ToString());
+                    return NewToken;
+                }
+                else
+                {
+                    return "Invalid user";
+                }
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
-
         }
         public void UserResetPassword(ResetPassword reset)
         {
             try
             {
+                //var token = new JwtSecurityToken(reset.token);
+
+                ////// Claims the email from token
+                //var Email = (token.Claims.First(c => c.Type == "Email").Value);
                 SqlConnection connection = new SqlConnection(_connectionString);
                 DataSet dataSet = new DataSet();
                 User user = new User();
