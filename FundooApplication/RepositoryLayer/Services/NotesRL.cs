@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RepositoryLayer.Services
 {
@@ -38,6 +39,7 @@ namespace RepositoryLayer.Services
                         notes.Description = (string)row["Description"];
                         notes.Reminder = (string)row["Reminder"];
                         notes.UserId = (int)row["UserId"];
+
 
                         usersList.Add(notes);
                     }
@@ -143,6 +145,147 @@ namespace RepositoryLayer.Services
             catch (Exception e)
             {
                 throw new Exception(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        public bool Archive(int NotesId)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    //Creating a stored Procedure for change color in Notes
+                    DateTime now = DateTime.Now;
+                    connection.Open();
+                    SqlCommand com = new SqlCommand("spArchieve", connection);
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@NotesId", NotesId);
+                    var result = com.ExecuteNonQuery();
+                    Notes note = new Notes();
+                    SqlDataReader rd = com.ExecuteReader();
+                    if (rd.Read())
+                    {
+                        note.NotesId = rd["NotesId"] == DBNull.Value ? default : rd.GetInt32("NotesId");
+                        note.Title = rd["Title"] == DBNull.Value ? default : rd.GetString("Title");
+                        note.Description = rd["Description"] == DBNull.Value ? default : rd.GetString("Description");
+                        note.UserId = rd["UserId"] == DBNull.Value ? default : rd.GetInt32("UserId");
+                        note.color = rd["color"] == DBNull.Value ? default : rd.GetString("color");
+                        note.CreatedDate = rd["CreatedDate"] == DBNull.Value ? default : rd.GetDateTime("CreatedDate");
+                        note.ModifiedDate = rd["ModifiedDate"] == DBNull.Value ? default : rd.GetDateTime("ModifiedDate");
+                    }
+                    if (result > 0)
+                    {
+                        Console.WriteLine("NOte archived Successfully ");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No records effected!");
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+    
+        public bool ChangeColor(int NotesId, string color)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    //Creating a stored Procedure for change color in Notes
+                    DateTime now = DateTime.Now;
+                    connection.Open();
+                    SqlCommand com = new SqlCommand("spColor", connection);
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@NotesId", NotesId);
+                    com.Parameters.AddWithValue("@color", color);
+                    var result = com.ExecuteNonQuery();
+                    Notes note = new Notes();
+                    SqlDataReader rd = com.ExecuteReader();
+                    if (rd.Read())
+                    {
+                        note.NotesId = rd["NotesId"] == DBNull.Value ? default : rd.GetInt32("NotesId");
+                        note.Title = rd["Title"] == DBNull.Value ? default : rd.GetString("Title");
+                        note.Description = rd["Description"] == DBNull.Value ? default : rd.GetString("Description");
+                        note.UserId = rd["UserId"] == DBNull.Value ? default : rd.GetInt32("UserId");
+                        note.color = rd["color"] == DBNull.Value ? default : rd.GetString("color");
+                        note.CreatedDate = rd["CreatedDate"] == DBNull.Value ? default : rd.GetDateTime("CreatedDate");
+                        note.ModifiedDate = rd["ModifiedDate"] == DBNull.Value ? default : rd.GetDateTime("ModifiedDate");
+                    }
+                    if (result > 0)
+                    {
+                        Console.WriteLine("Color Successfully Updated On Note Table");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No records effected!");
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        public bool Pin(int NotesId)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    //Creating a stored Procedure for change color in Notes
+                    DateTime now = DateTime.Now;
+                    connection.Open();
+                    SqlCommand com = new SqlCommand("spPin", connection);
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@NotesId", NotesId);
+                    var result = com.ExecuteNonQuery();
+                    Notes note = new Notes();
+                    SqlDataReader rd = com.ExecuteReader();
+                    if (rd.Read())
+                    {
+                        note.NotesId = rd["NotesId"] == DBNull.Value ? default : rd.GetInt32("NotesId");
+                        note.Title = rd["Title"] == DBNull.Value ? default : rd.GetString("Title");
+                        note.Description = rd["Description"] == DBNull.Value ? default : rd.GetString("Description");
+                        note.UserId = rd["UserId"] == DBNull.Value ? default : rd.GetInt32("UserId");
+                        note.color = rd["color"] == DBNull.Value ? default : rd.GetString("color");
+                        note.CreatedDate = rd["CreatedDate"] == DBNull.Value ? default : rd.GetDateTime("CreatedDate");
+                        note.ModifiedDate = rd["ModifiedDate"] == DBNull.Value ? default : rd.GetDateTime("ModifiedDate");
+                    }
+                    if (result > 0)
+                    {
+                        Console.WriteLine("Noten pinned Successfully");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No records effected!");
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
             finally
             {

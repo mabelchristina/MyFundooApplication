@@ -27,7 +27,7 @@ namespace BusinessManager.Services
             }
         }
 
-        public User UserLogin(Login login)
+        public string UserLogin(Login login)
         {
             try
             {
@@ -39,28 +39,27 @@ namespace BusinessManager.Services
                 throw;
             }
         }
-        
-         async Task<string> IUserBL.UserForgotPassword(ForgotPassword forgotPassword)
-        {
-            try
-            {
-                //// If checks forgotpassword model details is empty or not 
-                if (forgotPassword != null)
-                {
-                    var result = await this.dataOperations.UserForgotPassword(forgotPassword);
-                    return result;
-                }
-                else
-                {
-                    throw new Exception("User Email is not valid");
-                }
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-        }
- 
+
+        //Task<string> IUserBL.UserForgotPassword(ForgotPassword forgotPassword)
+        //{
+        //    try
+        //    {
+        //        //// If checks forgotpassword model details is empty or not 
+        //        if (forgotPassword != null)
+        //        {
+        //            var result= this.dataOperations.UserForgotPassword(forgotPassword);
+        //            return result;
+        //        }
+        //        else
+        //        {
+        //            throw new Exception("User Email is not valid");
+        //        }
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        throw exception;
+        //    }
+        //}
 
         User IUserBL.UserRegister(User user)
         {
@@ -75,17 +74,28 @@ namespace BusinessManager.Services
             }
         }
 
-        void IUserBL.UserResetPassword(ResetPassword reset)
+        public User ResetPassword(ResetPassword resetPassword)
         {
             try
             {
-                this.dataOperations.UserResetPassword(reset);
+                return dataOperations.ResetPassword(resetPassword);
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
-    }
+         bool IUserBL.CheckUser(string email)        
+        {
+            try
+            {
+                bool result = dataOperations.CheckUser(email);
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+         }
+   }
 }

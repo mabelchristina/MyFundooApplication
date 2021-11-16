@@ -17,12 +17,12 @@ namespace FundooApplication.Controllers
     public class UserController : ControllerBase
     {
         private IUserBL userDataAccess;
-        private readonly IAuthenticationManager jWTAuthenticationManager;
+        //private readonly IAuthenticationManager jWTAuthenticationManager;
 
-        public UserController(IUserBL userDataAccess, IAuthenticationManager jWTAuthenticationManager)
+        public UserController(IUserBL userDataAccess )
         {
             this.userDataAccess = userDataAccess;
-            this.jWTAuthenticationManager = jWTAuthenticationManager;
+           // this.jWTAuthenticationManager = jWTAuthenticationManager;
             
         }
         [HttpGet]
@@ -61,57 +61,86 @@ namespace FundooApplication.Controllers
         }
         
         [HttpPost("Login")]
-        public ActionResult<User> UserLogin(Login login)
+        public ActionResult<string> UserLogin(Login login)
         {
             try
             {
-                User userData = this.userDataAccess.UserLogin(login);
-               var token = jWTAuthenticationManager.Authenticate(userData);
+                var token = this.userDataAccess.UserLogin(login);
+               //var token = jWTAuthenticationManager.Authenticate(userData);
               if (token == null)
                     return Unauthorized();
-                return this.Ok(new { Success = true, Message = "User logged in successful", Data = userData, token });
+                return this.Ok(new { Success = true, Message = "User logged in successful", token });
             }
             catch (Exception e)
             {
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-        [Authorize]
-        [Route("ForgotPassword")]
-        [HttpPost]
-        public async Task<IActionResult> UserForgotPassword(ForgotPassword forgotPassword)
+        //[Authorize]
+        //[Route("ForgotPassword")]
+        //[HttpPost]
+        // public IActionResult UserForgotPassword(ForgotPassword forgotPassword)
+        //{
+        //    try
+        //    {
+
+        //        var result = userDataAccess.UserForgotPassword(forgotPassword);
+        //        return this.Ok(new { success = true, Message = "password reset link has been sent to your email id", email = forgotPassword.Email });
+
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return BadRequest(new { success = false, Message = "email id don't exist" });
+        //    }
+        //}
+
+        [AllowAnonymous]
+        [HttpPost("ForgetPassword")]
+        public IActionResult UserForgotPassword(ForgotPassword forgot)
         {
             try
             {
-                var result= await this.userDataAccess.UserForgotPassword(forgotPassword);
-                return this.Ok(new { Success = true, Message = "Link sent to your mail id", data = (result) });
+                //Send user data to manager
+                bool result = this.userDataAccess.CheckUser(forgot.Email);
+                if (result == true)
+                {
+                    return this.Ok(new { Status = true, Message = "Please check your email",Email=forgot.Email });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Email not Sent" });
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return this.BadRequest(new { Success = false, Message = e.Message });
+                return this.NotFound(new  { Status = false, Message = ex.Message });
             }
         }
-        [Authorize]
+        [AllowAnonymous]
         [Route("ResetPassword")]
         [HttpPost]
         public ActionResult<User> UserResetPassword(ResetPassword reset)
         {
+
             try
-            {
-                var identity = User.Identity as ClaimsIdentity;
-                if(identity!=null)
                 {
+                    var identity = User.Identity as ClaimsIdentity;
+                    if (identity != null)
+                        {
                     IEnumerable<Claim> claims = identity.Claims;
-                    var email = claims.Where(p => p.Type == "Email").FirstOrDefault()?.Value;
-                    reset.Email = email;
-                    userDataAccess.UserResetPassword(reset);
-                    
+                    var Email = claims.Where(p => p.Type == @"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").FirstOrDefault()?.Value;
+                    reset.Email = Email;
+                    User result= userDataAccess.ResetPassword(reset);
+                    if (result==null)
+                    {
+                        return this.Ok(new { success = true, message = "Password Reset Successful", User = result });
+                    }
                 }
-                return this.Ok(new { Success = true, Message = "Password reset is successful" });
+                return this.Ok(new { success = false, message = "Password Reset UnSuccessful" });
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                return this.BadRequest(new { Success = false, Message = e.Message });
+                return BadRequest(new { success = false, exception.Message });
             }
         }
     }

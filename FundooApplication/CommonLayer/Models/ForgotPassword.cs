@@ -6,7 +6,6 @@ namespace CommonLayer.Models
 {
     public class ForgotPassword
     {
-        public string Firstname { get; set; }
         public string Email { get; set; }
     }
 }

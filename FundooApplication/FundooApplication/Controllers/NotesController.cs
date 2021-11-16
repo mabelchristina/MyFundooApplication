@@ -19,7 +19,6 @@ namespace FundooApplication.Controllers
         {
             this.userDataAccess = userDataAccess;
         }
-        [Authorize]
         [HttpGet]
         public ActionResult<List<User>> GetAllUserNotes()
         {
@@ -34,7 +33,6 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-        [Authorize]
         [HttpPost]
         public ActionResult<Notes> AddNotes(Notes note)
         {
@@ -48,7 +46,7 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-        [Authorize]
+        
         [HttpPut]
         public ActionResult<Notes> UpdateNotes(Notes note)
         {
@@ -62,7 +60,6 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-        [Authorize]
         [HttpDelete]
         public ActionResult<Notes> DeleteNotes(Notes note)
         {
@@ -75,6 +72,61 @@ namespace FundooApplication.Controllers
             {
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
+        }
+
+        [HttpPut("Color")]
+        public IActionResult ChangeColor(int NotesId, string color)
+        {
+            try
+            {
+                var result = userDataAccess.ChangeColor(NotesId, color);
+                if (result == true)
+                {
+                    return Ok(new { success = true, Message = "NoteColor Updated Successful", NoteDetails = result });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, Message = "NoteColor Updation Failed" });
+                }
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(new { success = false, exception.Message });
+            }
+        }
+        [HttpPut("Archive")]
+        public IActionResult Archive(int Notesid)
+        {
+            //var UserValidilty = HttpContext.User;
+            //int UserId = Convert.ToInt32(UserValidilty.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            var status = userDataAccess.Archive(Notesid);
+            if (status == true)
+            {
+                return Ok(new { success = true, Message = "Note successfully archived", Notes = status });
+            }
+            else
+            {
+                return BadRequest(new { success = false, Message = "Unable to archive note" });
+            }
+
+
+        }
+        [HttpPut("Pin")]
+        public IActionResult Pin(int Notesid)
+        {
+            //var UserValidilty = HttpContext.User;
+            //int UserId = Convert.ToInt32(UserValidilty.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            var status = userDataAccess.Pin(Notesid);
+            if (status == true)
+            {
+                return Ok(new { success = true, Message = "Note successfully pinned", Notes = status });
+            }
+            else
+            {
+                return BadRequest(new { success = false, Message = "Unable to pin note" });
+            }
+
+
         }
     }
 

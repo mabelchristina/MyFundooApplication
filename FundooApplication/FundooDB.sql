@@ -106,11 +106,10 @@ exec spLogin
 --- Procedure for forgot password
 
 alter procedure spUserForgotPassword
-(@FirstName Nvarchar(50),
-@Email Nvarchar(50))
+(@Email Nvarchar(50))
 As 
 Begin try
-select Password from UserInfo where @FirstName=FirstName and @Email=Email
+select Password from UserInfo where  @Email=Email
 end try
 Begin catch
 SELECT
@@ -122,30 +121,22 @@ SELECT
 END CATCH  
 
 exec spUserForgotPassword
-'Jemmy','Jemmy@gmail.com'
+'Jemmy@gmail.com'
 
 --- Procedure to Reset password
 
 alter procedure spUserResetPassword
-(@Email varchar(50),
-@CurrentPassword varchar(50),
-@NewPassword varchar(50))
-As 
+(
+@Email varchar(50),
+@CurrentPassword varchar(100),
+@Newpassword varchar(100)
+)
+As
 Begin try
- if(Exists(Select *  from  UserInfo
-     where Email = @Email
-     and Password = @CurrentPassword))
- Begin
-  Update UserInfo
-  Set Password = @newpassword
-  where Email = @Email
-    Select 1 as IsPasswordChanged
- End
- Else
- Begin
-  Select 0 as IsPasswordChanged
- End
+		update UserInfo set password=@Currentpassword , @CurrentPassword=@Newpassword where Email=@Email;
+		select * from UserInfo where Email = @Email;
 end try
+
 Begin catch
 SELECT
     ERROR_NUMBER() AS ErrorNumber,
@@ -173,6 +164,8 @@ UserId int FOREIGN KEY REFERENCES UserInfo(UserId)
 )
 
 
+alter table Note add color varchar(50),trash varchar(50),archive varchar(50),pin varchar(50)
+alter table Note add CreatedDate Date, ModifiedDate Date
 
 select * from Note
 
@@ -271,5 +264,103 @@ END CATCH
 
 exec spDeleteNote
 'alarm'
+
+Select * from Note
+
+
+--Procedure to check isArchive in notes tables
+
+Alter procedure spArchieve
+(
+@NotesID int
+)
+As 
+Begin try
+if(exists(select * from Note where NotesId=@NotesID))
+Begin
+  Update Note
+  Set archive = 1
+  where NotesId = @NotesID
+    Select 1 as IsArchive
+ End
+ Else
+ Begin
+  Select 0 as IsNotArchive
+ End
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH  
+
+exec spArchieve
+1
+
+
+--Procedure to check isPin in notes tables
+Create procedure spPin
+(
+@NotesID int, @UserId int
+)
+As 
+Begin try
+if(exists(select * from Note where NotesId=@NotesID))
+Begin
+  Update Note
+  Set pin = 1
+  where NotesId = @NotesID
+    Select 1 as IsPin
+ End
+ Else
+ Begin
+  Select 0 as IsNotPin
+ End
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH  
+
+exec spPin
+1,2
+--Procedure to check isTrash in notes tables
+Create procedure spTrash
+(
+@NotesID int, @UserId int
+)
+As 
+Begin try
+if(exists(select * from Note where NotesId=@NotesID))
+Begin
+  Update Note
+  Set trash = 1
+  where NotesId = @NotesID
+    Select 1 as IsTrash
+ End
+ Else
+ Begin
+  Select 0 as IsNotTrash
+ End
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH  
+
+exec spTrash
+6,2
+
 
 Select * from Note

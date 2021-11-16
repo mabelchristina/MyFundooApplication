@@ -5,6 +5,7 @@ using RepositoryLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BusinessManager.Services
 {
@@ -65,6 +66,66 @@ namespace BusinessManager.Services
             {
 
                 throw;
+            }
+        }
+
+       bool INotesBL.Archive(int Notesid)
+        {
+            try
+            {
+                var result = this.dataOperations.Archive(Notesid);
+                if (Notesid != 0)
+                {
+                    return result;
+                }
+                else
+                {
+                    throw new Exception("Note is not found select the correct note");
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        bool INotesBL.ChangeColor(int NotesId, string color)
+        {
+            try
+            {
+                var result = this.dataOperations.ChangeColor(NotesId, color);
+                if (NotesId != 0)
+                {
+                    return result;
+                }
+                else
+                {
+                    throw new Exception("Note color cant be changed");
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        bool INotesBL.Pin(int NotesId)
+        {
+            try
+            {
+                var result = this.dataOperations.Pin(NotesId);
+                if (NotesId != 0)
+                {
+                    return result;
+                }
+                else
+                {
+                    throw new Exception("Note cant be pinned");
+                }
+            }
+            catch (Exception exception)
+            {
+                throw exception;
             }
         }
     }

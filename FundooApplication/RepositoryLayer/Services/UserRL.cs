@@ -1,4 +1,5 @@
 ﻿using CommonLayer.Models;
+using Experimental.System.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -9,6 +10,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,6 +26,20 @@ namespace RepositoryLayer.Services
         public UserRL(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("defaultConnection");
+        }
+        public static string EncryptPassword(string password)
+        {
+            try
+            {
+                byte[] encryptData = new byte[password.Length];
+                encryptData = System.Text.Encoding.UTF8.GetBytes(password);
+                string encodedData = Convert.ToBase64String(encryptData);
+                return encodedData;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in base64Encode" + ex.Message);
+            }
         }
         public List<User> GetUsers()
         {
@@ -73,7 +90,7 @@ namespace RepositoryLayer.Services
                     command.Parameters.AddWithValue("@City", user.City);
                     command.Parameters.AddWithValue("@MobileNumber", user.MobileNumber);
                     command.Parameters.AddWithValue("@Email", user.Email);
-                    command.Parameters.AddWithValue("@Password", user.Password);
+                    command.Parameters.AddWithValue("@Password", EncryptPassword (user.Password));
                     var result = command.ExecuteNonQuery();
                     connection.Close();
                     if (result != 0)
@@ -97,139 +114,250 @@ namespace RepositoryLayer.Services
             }
         }
 
-        public User UserLogin(Login login)
+        public string UserLogin(Login login)
         {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            User user = new User();
             try
-            {   
-                DataSet dataSet = new DataSet();
-                User user = new User();
-                string storedProcedure = "spLogin";
-                using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                using (connection)
                 {
-                    using (SqlCommand cmd = new SqlCommand(storedProcedure, connection))
-                    {
+                    //Creating a stored Procedure for login Users into database
+                        connection.Open();
+                        SqlCommand cmd = new SqlCommand("spLogin", connection);
                         cmd.CommandType = CommandType.StoredProcedure;
-
                         cmd.Parameters.AddWithValue("@Email", login.Email);
                         cmd.Parameters.AddWithValue("@Password", login.Password);
-                        using (var adapter = new SqlDataAdapter(cmd))
+                        var result = cmd.ExecuteNonQuery();;
+                        SqlDataReader rd = cmd.ExecuteReader();
+                        if (rd.Read())
                         {
-                            adapter.Fill(dataSet, "UserInfo");
+                            user.UserId = rd["UserId"] == DBNull.Value ? default : rd.GetInt32("UserId");
+                            user.FirstName = rd["FirstName"] == DBNull.Value ? default : rd.GetString("FirstName");
+                            user.LastName = rd["LastName"] == DBNull.Value ? default : rd.GetString("LastName");
+                            user.Email = rd["Email"] == DBNull.Value ? default : rd.GetString("Email");
+                            user.Password =EncryptPassword( rd["Password"] == DBNull.Value ? default : rd.GetString("Password"));
                         }
+                        return GenerateJWTToken(user.Email, user.UserId);
+                        //return user;
                     }
-
-                    foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
-                    {
-                        user.UserId = (int)row["UserId"];
-                        user.FirstName = (string)row["FirstName"];
-                        user.LastName = (string)row["LastName"];
-                        user.City = (string)row["City"];
-                        user.MobileNumber = (string)row["MobileNumber"];
-                        user.Email = (string)row["Email"];
-                        user.Password = (string)row["Password"];
-                    }
-
-                    connection.Close();
                 }
-                return user;
-            }
             catch (Exception)
             {
                 throw;
             }
         }
-        public async Task<string> UserForgotPassword(ForgotPassword forgotPassword)
+   
+        private static string GenerateJWTToken(string email, int userId)
+        {
+            //generate token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenKey = Encoding.ASCII.GetBytes("This is my test private key");
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim("email", email),
+                    new Claim("userId",userId.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(15),
+                SigningCredentials =
+                new SigningCredentials(
+                    new SymmetricSecurityKey(tokenKey),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+        public bool CheckUser(string email)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    User user = new User();
+                    //Creating a stored Procedure for forgetpassword Users into database
+                    connection.Open();
+                    SqlCommand com = new SqlCommand("spUserForgotPassword", connection);
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@email", email);
+                    //var result = com.ExecuteNonQuery();
+                    SqlDataReader rd = com.ExecuteReader();
+                    if (rd.Read())
+                    {
+                        user.UserId = rd["UserId"] == DBNull.Value ? default : rd.GetInt32("UserId");
+                        user.Email = rd["Email"] == DBNull.Value ? default : rd.GetString("Email");
+                    }
+                    MessageQueue queue;
+
+                    //ADD MESSAGE TO QUEUE
+                    if (MessageQueue.Exists(@".\Private$\MailQueue"))
+                    {
+                        queue = new MessageQueue(@".\Private$\MailQueue");
+                    }
+                    else
+                    {
+                        queue = MessageQueue.Create(@".\Private$\MailQueue");
+                    }
+
+                    Message MyMessage = new Message();
+                    MyMessage.Formatter = new BinaryMessageFormatter();
+                    MyMessage.Body = GenerateJWTToken(email, user.UserId);
+                    MyMessage.Label = "Forget Password Email";
+                    queue.Send(MyMessage);
+                    Message msg = queue.Receive();
+                    msg.Formatter = new BinaryMessageFormatter();
+                    MSMQEmail.SendEmail(msg.Body.ToString());
+                    queue.ReceiveCompleted += new ReceiveCompletedEventHandler(msmqQueue_ReceiveCompleted);
+
+                    queue.BeginReceive();
+                    queue.Close();
+                    return true;
+                    //string token = GenerateJWTToken(email, user.userId);
+                    //string url = $"www.fundooapp.com/reset-password/{token}";
+                    //this.SendToQueue(url);
+                    //return this.SendMail(email);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        private void msmqQueue_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
         {
             try
             {
-                SqlConnection connection = new SqlConnection(_connectionString);
-                DataSet dataSet = new DataSet();
                 User user = new User();
-                string sp = "spUserForgotPassword";
-                using (connection)
+                MessageQueue queue = (MessageQueue)sender;
+                Message msg = queue.EndReceive(e.AsyncResult);
+                MSMQEmail.SendEmail(e.Message.ToString());
+                queue.BeginReceive();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+
+        public void SendToQueue(string url)
+        {
+            try
+            {
+                MessageQueue msgQueue;
+                if (MessageQueue.Exists(@".\Private$\MyQueue"))
                 {
-                    using (SqlCommand cmd = new SqlCommand(sp, connection))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@FirstName", forgotPassword.Firstname);
-                        cmd.Parameters.AddWithValue("@Email", forgotPassword.Email);
-                        using (var adapter = new SqlDataAdapter(cmd))
-                        {
-                            adapter.Fill(dataSet, "UserInfo");
-                        }
-                    }
-                    connection.Close();
-                }
-                if (forgotPassword.Email != null)
-                {
-                    ////here we create object of MsmqTokenSender which is present in Common-Layer
-                    MsmqTokenSender msmq = new MsmqTokenSender();
-                    string key = "This is my SecretKey which is used for security purpose";
-
-                    ////Here generate encrypted key and result store in security key
-                    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-
-                    //// here using securitykey and algorithm(security) the creadintails is generate(SigningCredentials present in Token)
-                    var creadintials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-                    var claims = new[]
-                    {
-                    new Claim("Email", forgotPassword.Email),
-                };
-
-                    var token = new JwtSecurityToken("Security token", "https://Test.com",
-                        claims,
-                        DateTime.UtcNow,
-                        expires: DateTime.Now.AddDays(1),
-                        signingCredentials: creadintials);
-
-                    var NewToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-                    //// Send the email and password to Method in MsmqTokenSender
-                    msmq.SendMsmqToken(forgotPassword.Email, NewToken.ToString());
-                    return NewToken;
+                    msgQueue = new MessageQueue(@".\Private$\MyQueue");
+                    msgQueue.Authenticate = true;
                 }
                 else
                 {
-                    return "Invalid user";
+                    msgQueue = MessageQueue.Create(@".\Private$\MyQueue");
+                    msgQueue.Authenticate = true;
                 }
+
+                Message message = new Message();
+                message.Formatter = new BinaryMessageFormatter();
+                message.Body = url;
+                msgQueue.Label = "Url Link to reset";
+                msgQueue.Send(message);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
             }
         }
-        public void UserResetPassword(ResetPassword reset)
+
+        public string ReceiveQueue()
         {
             try
             {
-                //var token = new JwtSecurityToken(reset.token);
+                var receiveQueue = new MessageQueue(@".\Private$\MyQueue");
+                var receiveMsg = receiveQueue.Receive();
+                receiveMsg.Formatter = new BinaryMessageFormatter();
+                return receiveMsg.Body.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public bool SendMail(string email)
+        {
+            try
+            {
+                string url = this.ReceiveQueue();
+                MailMessage mail = new MailMessage();
+                SmtpClient smtpServer = new SmtpClient("smtp.gmail.com");
+                mail.From = new MailAddress("maybelchristina@gmail.com");
+                mail.To.Add(email);
+                mail.Subject = "Reset your password";
+                mail.Body = $"Click this link to reset your password\n";
+                smtpServer.Port = 587;
+                smtpServer.UseDefaultCredentials = false;
+                smtpServer.Credentials = new NetworkCredential("test.any.code.here@gmail.com", "test.any.code.here.182");
+                smtpServer.EnableSsl = true;
+                smtpServer.Send(mail);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public User ResetPassword(ResetPassword resetPassword)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
 
-                ////// Claims the email from token
-                //var Email = (token.Claims.First(c => c.Type == "Email").Value);
-                SqlConnection connection = new SqlConnection(_connectionString);
-                DataSet dataSet = new DataSet();
-                User user = new User();
-                string sp = "spUserResetPassword";
+            User user = new User();
+            try
+            {
                 using (connection)
                 {
+                    //Creating a stored Procedure for change password of User into database
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand(sp, connection);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Email", reset.Email);
-                    cmd.Parameters.AddWithValue("@CurrentPassword", reset.CurrentPassword);
-                    cmd.Parameters.AddWithValue("@NewPassword",reset.NewPassword);
-                    using (var adapter = new SqlDataAdapter(cmd))
+                    SqlCommand com = new SqlCommand("spUserResetPassword", connection);
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@Email", resetPassword.Email);
+                    com.Parameters.AddWithValue("@Currentpassword", resetPassword.CurrentPassword);
+                    com.Parameters.AddWithValue("@Newpassword", resetPassword.NewPassword);
+                    var result = com.ExecuteNonQuery();
+                    SqlDataReader rd = com.ExecuteReader();
+                    if (rd.Read())
                     {
-                        adapter.Fill(dataSet, "UserInfo");
+                        user.UserId = rd["UserId"] == DBNull.Value ? default : rd.GetInt32("UserId");
+                        user.FirstName = rd["FirstName"] == DBNull.Value ? default : rd.GetString("FirstName");
+                        user.LastName = rd["LastName"] == DBNull.Value ? default : rd.GetString("LastName");
+                        user.Email = rd["Email"] == DBNull.Value ? default : rd.GetString("Email");
+                        user.Password = EncryptPassword(rd["Password"] == DBNull.Value ? default : rd.GetString("Password"));
+
                     }
-                    connection.Close();
+                    if (result > 0)
+                    {
+                        Console.WriteLine("Record Successfully Updated On Table");
+                        return user;
+                    }
+                    else
+                    {
+                        Console.WriteLine("No records effected!");
+                        return null;
+                    }
                 }
-               
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
             }
         }
 

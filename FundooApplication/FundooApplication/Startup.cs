@@ -89,7 +89,7 @@ namespace FundooApplication
                     ValidateAudience = false
                 };
             });
-            services.AddSingleton<IAuthenticationManager>(new JWTAuthenticationManager(tokenKey));
+            //services.AddSingleton<IAuthenticationManager>(new JWTAuthenticationManager(tokenKey));
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
