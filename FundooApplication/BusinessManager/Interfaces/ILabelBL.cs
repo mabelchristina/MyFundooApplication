@@ -7,6 +7,7 @@ namespace BusinessManager.Interfaces
 {
     public interface ILabelBL
     {
+        public List<NoteLabel> GetAllLabel();
         public NoteLabel AddLabel(NoteLabel note);
     }
 }

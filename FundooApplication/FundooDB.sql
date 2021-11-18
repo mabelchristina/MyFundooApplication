@@ -227,18 +227,18 @@ exec spAddUserNotes
 
 create procedure spUpdateNotes
 (
-@NotesId int,
-@Title varchar(20),
-@Description varchar(50),
-@Reminder varchar(50)
+@labelId int,
+@labelName varchar(20),
+@UserId varchar(50),
+@NotesId varchar(50)
 )
 As 
 Begin try
-update Note
-set Title=@Title,
-	Description=@Description,
-	Reminder=@Reminder
-where NotesId=@NotesId
+update NoteLabel
+set labelName=@labelName,
+	UserId=@UserId
+	NotesId=@NotesId
+where labelId=@labelId
 end try
 Begin catch
 SELECT
@@ -407,17 +407,10 @@ insert into NoteLabel (labelName,UserId,noteId)values('Books',1,1)
 insert into NoteLabel (labelName,UserId,noteId,modifiedDate) values('Grocery',1,1,SYSDATETIME())
 
 
-
-create procedure spAddLabel
-(
-@labelName varchar(50),
-@userId int,
-@noteId int 
-)
+create procedure spGetAllLabel
 As
 Begin try
-insert into NoteLabel(labelName,userId,noteId)values(@labelName,@userId,@noteId)
-select * from NoteLabel where noteId=@noteId and userId=@userId
+select * from NoteLabel 
 end try
 Begin catch
 SELECT 
@@ -428,5 +421,79 @@ SELECT
 	ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
 
-exec spAddLabelNote 
-'dress items',2,2
+exec spGetAllLabel 
+
+
+
+create procedure spAddLabel
+(
+@labelName varchar(50),
+@userId int,
+@noteId int 
+)
+As
+Begin try
+insert into NoteLabel(labelName,userId,noteId)values(@labelName,@userId,@noteId)
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spAddLabel 
+'Shopping',2,1
+
+
+Alter procedure spUpdateLabel
+(
+@labelName varchar(50),
+@userId int,
+@noteId int 
+)
+As
+Begin try
+Update  NoteLabel set labelName=@labelName
+ where UserId= @userId and noteId =@noteId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spUpdateLabel 
+'Shopin',2,1
+
+select * from NoteLabel
+
+
+CREATE procedure spDeleteLabel     
+(      
+   @labelId int,
+   @UserId int      
+)      
+as       
+begin try      
+
+ Delete from NoteLabel Where
+labelId =@labelId AND UserId = @UserId  
+
+End try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spDeleteLabel
+9,2

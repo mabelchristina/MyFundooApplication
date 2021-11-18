@@ -7,6 +7,7 @@ namespace RepositoryLayer.Interfaces
 {
     public interface ILabelRL
     {
+        public List<NoteLabel> GetAllLabel();
         public NoteLabel AddLabel(NoteLabel note);
     }
 }

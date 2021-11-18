@@ -11,7 +11,8 @@ namespace RepositoryLayer.Interfaces
         public List<User> GetUsers();
         public string UserLogin(Login login);
         public User UserRegister(User user);
-        //public  Task<string> UserForgotPassword(ForgotPassword forgotPassword);
+        
+        ////public  Task<string> UserForgotPassword(ForgotPassword forgotPassword);
         // public void UserResetPassword(ResetPassword reset);
         // public bool ForgetPassword(string email);
 

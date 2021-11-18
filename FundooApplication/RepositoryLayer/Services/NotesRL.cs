@@ -158,7 +158,7 @@ namespace RepositoryLayer.Services
             {
                 using (connection)
                 {
-                    //Creating a stored Procedure for change color in Notes
+                    ////Creating a stored Procedure for change color in Notes
                     DateTime now = DateTime.Now;
                     connection.Open();
                     SqlCommand com = new SqlCommand("spArchieve", connection);
@@ -206,7 +206,7 @@ namespace RepositoryLayer.Services
             {
                 using (connection)
                 {
-                    //Creating a stored Procedure for change color in Notes
+                   ////Creating a stored Procedure for change color in Notes
                     DateTime now = DateTime.Now;
                     connection.Open();
                     SqlCommand com = new SqlCommand("spColor", connection);
@@ -253,7 +253,7 @@ namespace RepositoryLayer.Services
             {
                 using (connection)
                 {
-                    //Creating a stored Procedure for change color in Notes
+                    ////Creating a stored Procedure for change color in Notes
                     DateTime now = DateTime.Now;
                     connection.Open();
                     SqlCommand com = new SqlCommand("spPin", connection);

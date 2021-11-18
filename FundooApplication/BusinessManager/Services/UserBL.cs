@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BusinessManager.Services
 {
-   public class UserBL:IUserBL
+   public class UserBL : IUserBL
     {
         private IUserRL dataOperations;
         public UserBL(IUserRL dataOperations)
@@ -21,7 +21,7 @@ namespace BusinessManager.Services
             {
                 return this.dataOperations.GetUsers();
             }
-            catch(Exception )
+            catch(Exception)
             {
                 throw;
             }
@@ -78,7 +78,7 @@ namespace BusinessManager.Services
         {
             try
             {
-                return dataOperations.ResetPassword(resetPassword);
+                return this.dataOperations.ResetPassword(resetPassword);
             }
             catch (Exception)
             {
@@ -89,7 +89,7 @@ namespace BusinessManager.Services
         {
             try
             {
-                bool result = dataOperations.CheckUser(email);
+                bool result = this.dataOperations.CheckUser(email);
                 return true;
             }
             catch (Exception)

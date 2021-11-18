@@ -36,7 +36,7 @@ namespace FundooApplication
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSingleton<IUserBL,UserBL>();
+            services.AddSingleton<IUserBL, UserBL>();
             services.AddSingleton<IUserRL, UserRL>();
             services.AddSingleton<INotesBL, NotesBL>();
             services.AddSingleton<INotesRL, NotesRL>();

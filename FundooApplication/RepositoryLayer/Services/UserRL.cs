@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace RepositoryLayer.Services
 {
-    public class UserRL:IUserRL
+    public class UserRL : IUserRL
     {
         private readonly string _connectionString;
 
@@ -70,7 +70,7 @@ namespace RepositoryLayer.Services
                 }
                 return usersList;
             }
-            catch (Exception )
+            catch (Exception)
             {
                 throw;
             }
@@ -96,8 +96,8 @@ namespace RepositoryLayer.Services
                     if (result != 0)
                     {
 
-                        Console.WriteLine("successfully registered" + user.FirstName+user.LastName+user.City
-                            +user.City+user.MobileNumber+user.Email+user.Password);
+                        Console.WriteLine("successfully registered" + user.FirstName + user.LastName + user.City
+                            + user.City + user.MobileNumber + user.Email + user.Password);
 
                     }
                     return user;
@@ -122,7 +122,7 @@ namespace RepositoryLayer.Services
             {
                 using (connection)
                 {
-                    //Creating a stored Procedure for login Users into database
+                    ////Creating a stored Procedure for login Users into database
                         connection.Open();
                         SqlCommand cmd = new SqlCommand("spLogin", connection);
                         cmd.CommandType = CommandType.StoredProcedure;
@@ -136,10 +136,10 @@ namespace RepositoryLayer.Services
                             user.FirstName = rd["FirstName"] == DBNull.Value ? default : rd.GetString("FirstName");
                             user.LastName = rd["LastName"] == DBNull.Value ? default : rd.GetString("LastName");
                             user.Email = rd["Email"] == DBNull.Value ? default : rd.GetString("Email");
-                            user.Password =EncryptPassword( rd["Password"] == DBNull.Value ? default : rd.GetString("Password"));
+                            user.Password = EncryptPassword( rd["Password"] == DBNull.Value ? default : rd.GetString("Password"));
                         }
                         return GenerateJWTToken(user.Email, user.UserId);
-                        //return user;
+                        ////return user;
                     }
                 }
             catch (Exception)
@@ -150,15 +150,14 @@ namespace RepositoryLayer.Services
    
         private static string GenerateJWTToken(string email, int userId)
         {
-            //generate token
+            ////generate token
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenKey = Encoding.ASCII.GetBytes("This is my test private key");
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim("email", email),
-                    new Claim("userId",userId.ToString())
+                    new Claim("email", email), new Claim("userId", userId.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials =
@@ -177,12 +176,12 @@ namespace RepositoryLayer.Services
                 using (connection)
                 {
                     User user = new User();
-                    //Creating a stored Procedure for forgetpassword Users into database
+                    ////Creating a stored Procedure for forgetpassword Users into database
                     connection.Open();
                     SqlCommand com = new SqlCommand("spUserForgotPassword", connection);
                     com.CommandType = CommandType.StoredProcedure;
                     com.Parameters.AddWithValue("@email", email);
-                    //var result = com.ExecuteNonQuery();
+                    ////var result = com.ExecuteNonQuery();
                     SqlDataReader rd = com.ExecuteReader();
                     if (rd.Read())
                     {
@@ -191,7 +190,7 @@ namespace RepositoryLayer.Services
                     }
                     MessageQueue queue;
 
-                    //ADD MESSAGE TO QUEUE
+                    ////ADD MESSAGE TO QUEUE
                     if (MessageQueue.Exists(@".\Private$\MailQueue"))
                     {
                         queue = new MessageQueue(@".\Private$\MailQueue");
@@ -209,12 +208,12 @@ namespace RepositoryLayer.Services
                     Message msg = queue.Receive();
                     msg.Formatter = new BinaryMessageFormatter();
                     MSMQEmail.SendEmail(msg.Body.ToString());
-                    queue.ReceiveCompleted += new ReceiveCompletedEventHandler(msmqQueue_ReceiveCompleted);
+                    queue.ReceiveCompleted += new ReceiveCompletedEventHandler(this.msmqQueue_ReceiveCompleted);
 
                     queue.BeginReceive();
                     queue.Close();
                     return true;
-                    //string token = GenerateJWTToken(email, user.userId);
+                    ////string token = GenerateJWTToken(email, user.userId);
                     //string url = $"www.fundooapp.com/reset-password/{token}";
                     //this.SendToQueue(url);
                     //return this.SendMail(email);

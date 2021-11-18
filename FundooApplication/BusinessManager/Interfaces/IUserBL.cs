@@ -11,6 +11,7 @@ namespace BusinessManager.Interfaces
         List<User> GetAllUsers();
         public string UserLogin(Login login);
         public User UserRegister(User user);
+
         // public Task<string> UserForgotPassword(ForgotPassword forgotPassword);
         public User ResetPassword(ResetPassword resetPassword);
         public bool CheckUser(string email);

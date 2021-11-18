@@ -26,5 +26,17 @@ namespace BusinessManager.Services
                 throw;
             }
         }
+
+        List<NoteLabel> ILabelBL.GetAllLabel()
+        {
+            try
+            {
+                return noteLabelRL.GetAllLabel();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

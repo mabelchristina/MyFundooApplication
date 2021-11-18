@@ -19,7 +19,7 @@ namespace FundooApplication.Controllers
         private IUserBL userDataAccess;
         //private readonly IAuthenticationManager jWTAuthenticationManager;
 
-        public UserController(IUserBL userDataAccess )
+        public UserController(IUserBL userDataAccess)
         {
             this.userDataAccess = userDataAccess;
            // this.jWTAuthenticationManager = jWTAuthenticationManager;
@@ -104,7 +104,7 @@ namespace FundooApplication.Controllers
                 bool result = this.userDataAccess.CheckUser(forgot.Email);
                 if (result == true)
                 {
-                    return this.Ok(new { Status = true, Message = "Please check your email",Email=forgot.Email });
+                    return this.Ok(new { Status = true, Message = "Please check your email", Email = forgot.Email });
                 }
                 else
                 {
@@ -130,8 +130,8 @@ namespace FundooApplication.Controllers
                     IEnumerable<Claim> claims = identity.Claims;
                     var Email = claims.Where(p => p.Type == @"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").FirstOrDefault()?.Value;
                     reset.Email = Email;
-                    User result= userDataAccess.ResetPassword(reset);
-                    if (result==null)
+                    User result = this.userDataAccess.ResetPassword(reset);
+                    if (result == null)
                     {
                         return this.Ok(new { success = true, message = "Password Reset Successful", User = result });
                     }
