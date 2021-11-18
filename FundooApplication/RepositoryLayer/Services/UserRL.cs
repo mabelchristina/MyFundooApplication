@@ -90,7 +90,7 @@ namespace RepositoryLayer.Services
                     command.Parameters.AddWithValue("@City", user.City);
                     command.Parameters.AddWithValue("@MobileNumber", user.MobileNumber);
                     command.Parameters.AddWithValue("@Email", user.Email);
-                    command.Parameters.AddWithValue("@Password", EncryptPassword (user.Password));
+                    command.Parameters.AddWithValue("@Password",  (user.Password));
                     var result = command.ExecuteNonQuery();
                     connection.Close();
                     if (result != 0)

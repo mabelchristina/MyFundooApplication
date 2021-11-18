@@ -40,6 +40,8 @@ namespace FundooApplication
             services.AddSingleton<IUserRL, UserRL>();
             services.AddSingleton<INotesBL, NotesBL>();
             services.AddSingleton<INotesRL, NotesRL>();
+            services.AddTransient<ILabelBL, LabelBL>();
+            services.AddTransient<ILabelRL, LabelRL>();
 
             services.AddSwaggerGen(setup =>
             {

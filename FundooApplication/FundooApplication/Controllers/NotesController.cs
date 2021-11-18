@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FundooApplication.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("Notes")]
     [ApiController]
     public class NotesController : ControllerBase
     {

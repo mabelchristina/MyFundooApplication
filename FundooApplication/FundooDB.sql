@@ -131,12 +131,22 @@ alter procedure spUserResetPassword
 @CurrentPassword varchar(100),
 @Newpassword varchar(100)
 )
-As
+As 
 Begin try
-		update UserInfo set password=@Currentpassword , @CurrentPassword=@Newpassword where Email=@Email;
-		select * from UserInfo where Email = @Email;
+ if(Exists(Select *  from  UserInfo
+     where Email = @Email
+     and Password = @CurrentPassword))
+ Begin
+  Update UserInfo
+  Set Password = @newpassword
+  where Email = @Email
+    Select 1 as IsPasswordChanged
+ End
+ Else
+ Begin
+  Select 0 as IsPasswordChanged
+ End
 end try
-
 Begin catch
 SELECT
     ERROR_NUMBER() AS ErrorNumber,
@@ -149,7 +159,7 @@ END CATCH
  
 
 exec spUserResetPassword
-'Jane@gmail.com','Jane','Janey'
+'Jane@gmail.com','Janey','Jane'
 
 select * from UserInfo
 -------------------------------------------------------------------------------
@@ -168,7 +178,7 @@ alter table Note add color varchar(50),trash varchar(50),archive varchar(50),pin
 alter table Note add CreatedDate Date, ModifiedDate Date
 
 select * from Note
-
+33
 insert into Note (Title,Description,Reminder,UserId)values('To-Do','Shopping','Remind at 2',1)
 
 
@@ -281,12 +291,7 @@ Begin
   Update Note
   Set archive = 1
   where NotesId = @NotesID
-    Select 1 as IsArchive
- End
- Else
- Begin
-  Select 0 as IsNotArchive
- End
+ end  
 end try
 Begin catch
 SELECT
@@ -302,9 +307,9 @@ exec spArchieve
 
 
 --Procedure to check isPin in notes tables
-Create procedure spPin
+Alter procedure spPin
 (
-@NotesID int, @UserId int
+@NotesID int
 )
 As 
 Begin try
@@ -313,11 +318,7 @@ Begin
   Update Note
   Set pin = 1
   where NotesId = @NotesID
-    Select 1 as IsPin
- End
- Else
- Begin
-  Select 0 as IsNotPin
+
  End
 end try
 Begin catch
@@ -330,7 +331,7 @@ SELECT
 END CATCH  
 
 exec spPin
-1,2
+1
 --Procedure to check isTrash in notes tables
 Create procedure spTrash
 (
@@ -338,17 +339,16 @@ Create procedure spTrash
 )
 As 
 Begin try
-if(exists(select * from Note where NotesId=@NotesID))
-Begin
-  Update Note
-  Set trash = 1
-  where NotesId = @NotesID
-    Select 1 as IsTrash
- End
- Else
- Begin
-  Select 0 as IsNotTrash
- End
+declare @count int
+select @count =count (@NotesID) from Note where UserId=@UserId and NotesId=@NotesID
+if(@count<>1)
+begin
+Raiserror('Note is not present',16,1)
+end
+else
+begin
+
+
 end try
 Begin catch
 SELECT
@@ -364,3 +364,69 @@ exec spTrash
 
 
 Select * from Note
+
+--Procedure to check isTrash in notes tables
+Alter procedure spColor
+(
+@NotesID int, @Color varchar(50)
+)
+As 
+Begin try
+  Update Note
+  Set color = @color
+  where NotesId = @NotesID
+end try
+Begin catch
+SELECT
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
+END CATCH  
+
+exec spColor
+6,'#FFC0CB'
+
+
+
+create table NoteLabel(
+labelId int identity(1,1) primary key,
+labelName varchar(50),
+UserId int not null foreign key references UserInfo(UserId),
+noteId int not null foreign key references Note(NotesID),
+registeredDate datetime default GETDATE(),
+modifiedDate datetime null
+)
+
+
+select * from NoteLabel
+
+
+insert into NoteLabel (labelName,UserId,noteId)values('Books',1,1)
+insert into NoteLabel (labelName,UserId,noteId,modifiedDate) values('Grocery',1,1,SYSDATETIME())
+
+
+
+create procedure spAddLabel
+(
+@labelName varchar(50),
+@userId int,
+@noteId int 
+)
+As
+Begin try
+insert into NoteLabel(labelName,userId,noteId)values(@labelName,@userId,@noteId)
+select * from NoteLabel where noteId=@noteId and userId=@userId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spAddLabelNote 
+'dress items',2,2
