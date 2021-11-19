@@ -125,8 +125,19 @@ namespace FundooApplication.Controllers
             {
                 return BadRequest(new { success = false, Message = "Unable to pin note" });
             }
-
-
+        }
+        [HttpDelete("Trash")]
+        public ActionResult<Notes> Trash(Notes note)
+        {
+            try
+            {
+                this.userDataAccess.Trash(note);
+                return this.Ok(new { Success = true, Message = "User Note deleted successfully" });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Success = false, Message = e.Message });
+            }
         }
     }
 

@@ -128,5 +128,18 @@ namespace BusinessManager.Services
                 throw exception;
             }
         }
+
+        void INotesBL.Trash(Notes note)
+        {
+            try
+            {
+                dataOperations.Trash(note);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

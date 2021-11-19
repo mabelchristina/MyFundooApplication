@@ -292,5 +292,34 @@ namespace RepositoryLayer.Services
                 connection.Close();
             }
         }
+        public void Trash(Notes note)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    SqlCommand command = new SqlCommand("spTrash", connection);
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@NotesId", note.NotesId);
+                    command.Parameters.AddWithValue("@UserId", note.UserId);
+                    connection.Open();
+                    var result = command.ExecuteNonQuery();
+                    if (result != 0)
+                    {
+                        Console.WriteLine("Notes deleted");
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
     }
 }

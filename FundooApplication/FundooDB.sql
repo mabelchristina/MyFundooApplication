@@ -333,7 +333,7 @@ END CATCH
 exec spPin
 1
 --Procedure to check isTrash in notes tables
-Create procedure spTrash
+Alter procedure spTrash
 (
 @NotesID int, @UserId int
 )
@@ -347,8 +347,10 @@ Raiserror('Note is not present',16,1)
 end
 else
 begin
-
-
+delete from Note where NotesId=@NotesID 
+update Note set trash=trash^1 where UserId=@UserId and NotesId=@NotesID
+/*select * from UserInfo where UserId=@UserId and @NotesID=@NotesID*/
+end
 end try
 Begin catch
 SELECT

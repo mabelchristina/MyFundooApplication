@@ -15,8 +15,6 @@ namespace CommonLayer.Models
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
  
-
-        [RegularExpression("^#(?:[0-9a-fA-F]{3}){1,2}$")]
         public string color { get; set; }
 
         public bool Trash { get; set; }

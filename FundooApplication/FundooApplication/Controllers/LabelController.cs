@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FundooApplication.Controllers
 {
-    [Route("Controller")]
+    [Route("Label")]
     [ApiController]
     public class LabelController : ControllerBase
     {

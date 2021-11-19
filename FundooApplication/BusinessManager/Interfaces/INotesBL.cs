@@ -15,5 +15,8 @@ namespace BusinessManager.Interfaces
         public bool Archive(int NotesId);
         public bool ChangeColor(int NotesId, string color);
         public bool Pin(int NotesId);
+
+        public void Trash(Notes note);
+
     }
 }
