@@ -33,8 +33,8 @@ namespace FundooApplication.Controllers
             }
         }
 
-        [HttpPost("Add")]
-        public ActionResult<Notes> AddLabel(NoteLabel labelModel)
+        [HttpPost]
+        public ActionResult<NoteLabel> AddLabel(NoteLabel labelModel)
         {
             try
             {
@@ -42,6 +42,36 @@ namespace FundooApplication.Controllers
                 //int UserId = Int32.Parse(Userid.Value);
                 NoteLabel addlabel = noteLabelBL.AddLabel(labelModel);
                 return this.Ok(new { Success = true, Message = "Label added successfully", Data = addlabel });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Success = false, Message = e.Message });
+            }
+        }
+        [HttpPut]
+        public ActionResult<NoteLabel> UpdateLabel(NoteLabel labelModel)
+        {
+            try
+            {
+                //var Userid = User.Claims.FirstOrDefault(x => x.Type.ToString().Equals("userId", StringComparison.InvariantCultureIgnoreCase));
+                //int UserId = Int32.Parse(Userid.Value);
+                NoteLabel addlabel = noteLabelBL.UpdateLabel(labelModel);
+                return this.Ok(new { Success = true, Message = "Label added successfully", Data = addlabel });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Success = false, Message = e.Message });
+            }
+        }
+        [HttpDelete]
+        public IActionResult DeleteLabel(NoteLabel labelModel)
+        {
+            try
+            {
+                //var Userid = User.Claims.FirstOrDefault(x => x.Type.ToString().Equals("userId", StringComparison.InvariantCultureIgnoreCase));
+                //int UserId = Int32.Parse(Userid.Value);
+                noteLabelBL.DeleteLabel(labelModel);
+                return this.Ok(new { Success = true, Message = "Label added successfully"});
             }
             catch (Exception e)
             {

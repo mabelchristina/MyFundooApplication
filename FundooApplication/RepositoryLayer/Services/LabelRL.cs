@@ -86,5 +86,64 @@ namespace RepositoryLayer.Services
                 connection.Close();
             }
         }
+        public NoteLabel UpdateLabel(NoteLabel note)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    SqlCommand command = new SqlCommand("spUpdateLabel", connection);
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@labelName", note.labelName);
+                    command.Parameters.AddWithValue("@UserId", note.UserId);
+                    command.Parameters.AddWithValue("@noteId", note.noteId);
+                    connection.Open();
+                    var result = command.ExecuteNonQuery();
+                    if (result != 0)
+                    {
+                        Console.WriteLine("successfully updated" + note.labelName + note.UserId
+                              + note.noteId);
+                    }
+                    return note;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        public void DeleteLabel(NoteLabel note)
+        {
+            SqlConnection connection = new SqlConnection(_connectionString);
+            try
+            {
+                using (connection)
+                {
+                    SqlCommand command = new SqlCommand("spDeleteLabel", connection);
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@labelId", note.labelId);
+                    connection.Open();
+                    var result = command.ExecuteNonQuery();
+                    if (result != 0)
+                    {
+                        Console.WriteLine("successfully updated");
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
     }
 }

@@ -469,21 +469,20 @@ SELECT
 END CATCH
 
 exec spUpdateLabel 
-'Shopin',2,1
+'Movie',2,1
 
 select * from NoteLabel
 
 
-CREATE procedure spDeleteLabel     
+alter procedure spDeleteLabel     
 (      
-   @labelId int,
-   @UserId int      
-)      
+   @labelId int    
+)     
 as       
 begin try      
 
  Delete from NoteLabel Where
-labelId =@labelId AND UserId = @UserId  
+labelId =@labelId 
 
 End try
 Begin catch
@@ -496,4 +495,4 @@ SELECT
 END CATCH
 
 exec spDeleteLabel
-9,2
+5

@@ -27,11 +27,35 @@ namespace BusinessManager.Services
             }
         }
 
+        void ILabelBL.DeleteLabel(NoteLabel note)
+        {
+            try
+            {
+                this.noteLabelRL.DeleteLabel(note);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         List<NoteLabel> ILabelBL.GetAllLabel()
         {
             try
             {
                 return noteLabelRL.GetAllLabel();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        NoteLabel ILabelBL.UpdateLabel(NoteLabel note)
+        {
+            try
+            {
+                return noteLabelRL.UpdateLabel(note);
             }
             catch (Exception)
             {

@@ -9,5 +9,7 @@ namespace BusinessManager.Interfaces
     {
         public List<NoteLabel> GetAllLabel();
         public NoteLabel AddLabel(NoteLabel note);
+        public NoteLabel UpdateLabel(NoteLabel note);
+        public void DeleteLabel(NoteLabel note);
     }
 }
