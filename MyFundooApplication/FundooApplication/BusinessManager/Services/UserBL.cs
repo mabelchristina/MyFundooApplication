@@ -74,22 +74,22 @@ namespace BusinessManager.Services
             }
         }
 
-        public User ResetPassword(ResetPassword resetPassword)
+        public User ResetPassword(string email, ResetPassword resetPasswordModel)
         {
             try
             {
-                return this.dataOperations.ResetPassword(resetPassword);
+                return this.dataOperations.ResetPassword(email, resetPasswordModel);
             }
             catch (Exception)
             {
                 throw;
             }
         }
-         bool IUserBL.CheckUser(string email)        
+         bool IUserBL.ForgotPassword(string email)        
         {
             try
             {
-                bool result = this.dataOperations.CheckUser(email);
+                bool result = this.dataOperations.ForgotPassword(email);
                 return true;
             }
             catch (Exception)

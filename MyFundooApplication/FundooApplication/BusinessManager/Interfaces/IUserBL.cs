@@ -13,8 +13,8 @@ namespace BusinessManager.Interfaces
         public User UserRegister(User user);
 
         // public Task<string> UserForgotPassword(ForgotPassword forgotPassword);
-        public User ResetPassword(ResetPassword resetPassword);
-        public bool CheckUser(string email);
+        public User ResetPassword(string email, ResetPassword resetPasswordModel);
+        public bool ForgotPassword(string email);
     }
 
 }

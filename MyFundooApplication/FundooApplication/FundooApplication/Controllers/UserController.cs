@@ -17,12 +17,10 @@ namespace FundooApplication.Controllers
     public class UserController : ControllerBase
     {
         private IUserBL userDataAccess;
-        //private readonly IAuthenticationManager jWTAuthenticationManager;
 
         public UserController(IUserBL userDataAccess)
         {
             this.userDataAccess = userDataAccess;
-           // this.jWTAuthenticationManager = jWTAuthenticationManager;
             
         }
         [HttpGet]
@@ -76,23 +74,6 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
-        //[Authorize]
-        //[Route("ForgotPassword")]
-        //[HttpPost]
-        // public IActionResult UserForgotPassword(ForgotPassword forgotPassword)
-        //{
-        //    try
-        //    {
-
-        //        var result = userDataAccess.UserForgotPassword(forgotPassword);
-        //        return this.Ok(new { success = true, Message = "password reset link has been sent to your email id", email = forgotPassword.Email });
-
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return BadRequest(new { success = false, Message = "email id don't exist" });
-        //    }
-        //}
 
         [AllowAnonymous]
         [HttpPost("ForgetPassword")]
@@ -101,7 +82,7 @@ namespace FundooApplication.Controllers
             try
             {
                 //Send user data to manager
-                bool result = this.userDataAccess.CheckUser(forgot.Email);
+                bool result = this.userDataAccess.ForgotPassword(forgot.Email);
                 if (result == true)
                 {
                     return this.Ok(new { Status = true, Message = "Please check your email", Email = forgot.Email });
@@ -129,14 +110,14 @@ namespace FundooApplication.Controllers
                         {
                     IEnumerable<Claim> claims = identity.Claims;
                     var Email = claims.Where(p => p.Type == @"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").FirstOrDefault()?.Value;
-                    reset.Email = Email;
-                    User result = this.userDataAccess.ResetPassword(reset);
+                    
+                    User result = this.userDataAccess.ResetPassword(Email,reset);
                     if (result == null)
                     {
-                        return this.Ok(new { success = true, message = "Password Reset Successful", User = result });
+                        return this.Ok(new { success = true, message = "Password Reset UnSuccessful", User = result });
                     }
                 }
-                return this.Ok(new { success = false, message = "Password Reset UnSuccessful" });
+                return this.Ok(new { success = false, message = "Password Reset Successful" });
             }
             catch (Exception exception)
             {
