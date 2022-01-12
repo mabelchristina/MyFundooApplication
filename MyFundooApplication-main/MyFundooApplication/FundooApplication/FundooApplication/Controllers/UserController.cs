@@ -3,11 +3,15 @@ using CommonLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using RepositoryLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FundooApplication.Controllers
@@ -17,19 +21,23 @@ namespace FundooApplication.Controllers
     public class UserController : ControllerBase
     {
         private IUserBL userDataAccess;
-
-        public UserController(IUserBL userDataAccess)
+        private readonly IMemoryCache memoryCache;
+        private readonly IDistributedCache distributedCache;
+        public UserController(IMemoryCache memoryCache, IDistributedCache distributedCache, IUserBL userDataAccess)
         {
+            this.memoryCache = memoryCache;
+            this.distributedCache = distributedCache;
             this.userDataAccess = userDataAccess;
-            
-        }
+        }   
+
+     
         [HttpGet]
-        public ActionResult<List<User>> GetAllUsers()
+        async Task<ActionResult<List<User>>> GetAllUsers()
         {
             Response httpResponse = new Response();
             try
             {
-                List<User> usersData = this.userDataAccess.GetAllUsers();
+                List<User> usersData = await userDataAccess.GetAllUsers();
                 return this.Ok(new { Success = true, Message = "Get request is successful", Data = usersData });
             }
             catch (Exception e)
@@ -37,8 +45,27 @@ namespace FundooApplication.Controllers
                 return this.BadRequest(new { Success = false, Message = e.Message });
             }
         }
+        [HttpGet("redis")]
+        public async Task<IActionResult> GetAllCustomersUsingRedisCache()
+        {
+            var cacheKey = "customerList";
+            string serializedCustomerList;
+            var customerList = new List<User>();
+            var redisCustomerList = await distributedCache.GetAsync(cacheKey);
+            if (redisCustomerList != null)
+            {
+                serializedCustomerList = Encoding.UTF8.GetString(redisCustomerList);
+                customerList = JsonConvert.DeserializeObject<List<User>>(serializedCustomerList);
+            }
+            else
+            {
+                customerList = await userDataAccess.GetAllUsers();
+                serializedCustomerList = JsonConvert.SerializeObject(customerList);
+                redisCustomerList = Encoding.UTF8.GetBytes(serializedCustomerList);
+            }
+            return Ok(customerList);
+        }
 
-       
         [Route("Register")]
         [HttpPost]
         public ActionResult<User> UserRegister(User user)
@@ -117,7 +144,7 @@ namespace FundooApplication.Controllers
                         return this.Ok(new { success = true, message = "Password Reset UnSuccessful", User = result });
                     }
                 }
-                return this.Ok(new { success = false, message = "Password Reset Successful" });
+                return this.Ok(new { success = true, message = "Password Reset Successful" });
             }
             catch (Exception exception)
             {

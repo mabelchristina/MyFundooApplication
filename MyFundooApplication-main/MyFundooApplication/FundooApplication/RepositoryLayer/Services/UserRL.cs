@@ -41,7 +41,7 @@ namespace RepositoryLayer.Services
                 throw new Exception("Error in base64Encode" + ex.Message);
             }
         }
-        public List<User> GetUsers()
+        public async Task<List<User>> GetAllUsers()
         {
             try
             {
@@ -52,8 +52,8 @@ namespace RepositoryLayer.Services
                 {
                     connection.Open();
                     SqlDataAdapter adapter = new SqlDataAdapter(storedProcedure, connection);
-                    adapter.Fill(dataSet, "UserInfo");
-
+                    await Task.Run(() => adapter.Fill(dataSet, "UserInfo"));
+                    
                     foreach (DataRow row in dataSet.Tables["UserInfo"].Rows)
                     {
                         User user = new User();

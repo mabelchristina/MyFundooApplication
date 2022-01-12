@@ -15,17 +15,17 @@ namespace BusinessManager.Services
         {
             this.dataOperations = dataOperations;
         }
-        public List<User> GetAllUsers()
-        {
-            try
-            {
-                return this.dataOperations.GetUsers();
-            }
-            catch(Exception)
-            {
-                throw;
-            }
-        }
+        //async Task<List<User>> GetAllUsers()
+        //{
+        //    try
+        //    {
+        //        return await dataOperations.GetAllUsers();
+        //    }
+        //    catch(Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
 
         public string UserLogin(Login login)
         {
@@ -97,5 +97,17 @@ namespace BusinessManager.Services
                 throw;
             }
          }
-   }
+
+        async Task<List<User>> IUserBL.GetAllUsers()
+        {
+            try
+            {
+                return await dataOperations.GetAllUsers();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
 }

@@ -1,0 +1,18 @@
+email id should be unique
+raise error in tsql
+
+authorization VS authentication in asp.net core web api
+jwt token in asp.net core web api
+token based authentication in asp.net core web api
+
+
+Login successful--JWT token--payload store logged in record id and email 
+
+gerenic jwt token in asp.net web api
+jwt authorization on asp.net web api
+
+
+add swagger in asp.net core web api---startup file
+
+
+

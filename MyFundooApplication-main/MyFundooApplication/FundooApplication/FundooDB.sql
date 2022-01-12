@@ -125,41 +125,18 @@ exec spUserForgotPassword
 
 --- Procedure to Reset password
 
-alter procedure spUserResetPassword
-(
-@Email varchar(50),
-@CurrentPassword varchar(100),
-@Newpassword varchar(100)
-)
-As 
-Begin try
- if(Exists(Select *  from  UserInfo
-     where Email = @Email
-     and Password = @CurrentPassword))
- Begin
-  Update UserInfo
-  Set Password = @newpassword
-  where Email = @Email
-    Select 1 as IsPasswordChanged
- End
- Else
- Begin
-  Select 0 as IsPasswordChanged
- End
-end try
-Begin catch
-SELECT
-    ERROR_NUMBER() AS ErrorNumber,
-    ERROR_STATE() AS ErrorState,
-    ERROR_PROCEDURE() AS ErrorProcedure,
-    ERROR_LINE() AS ErrorLine,
-    ERROR_MESSAGE() AS ErrorMessage;
-END CATCH 
+alter procedure spResetPassword
 
- 
+(@Email nvarchar(50),
+ @NewPassword Nvarchar(50))
+as
+begin
+	update UserInfo set
+	Password=@NewPassword
+	where Email=@Email
+end
 
-exec spUserResetPassword
-'Jane@gmail.com','Janey','Jane'
+
 
 select * from UserInfo
 -------------------------------------------------------------------------------
@@ -280,32 +257,49 @@ Select * from Note
 
 --Procedure to check isArchive in notes tables
 
+--Alter procedure spArchieve
+--(
+--@NotesID int
+--)
+--As 
+--Begin try
+--if(exists(select * from Note where NotesId=@NotesID))
+--Begin
+--  Update Note
+--  Set archive = 1
+--  where NotesId = @NotesID
+-- end  
+--end try
+--Begin catch
+--SELECT
+--    ERROR_NUMBER() AS ErrorNumber,
+--    ERROR_STATE() AS ErrorState,
+--    ERROR_PROCEDURE() AS ErrorProcedure,
+--    ERROR_LINE() AS ErrorLine,
+--    ERROR_MESSAGE() AS ErrorMessage;
+--END CATCH  
+
+exec spArchieve
+7
+
 Alter procedure spArchieve
 (
 @NotesID int
 )
 As 
-Begin try
-if(exists(select * from Note where NotesId=@NotesID))
-Begin
-  Update Note
-  Set archive = 1
-  where NotesId = @NotesID
- end  
-end try
-Begin catch
-SELECT
-    ERROR_NUMBER() AS ErrorNumber,
-    ERROR_STATE() AS ErrorState,
-    ERROR_PROCEDURE() AS ErrorProcedure,
-    ERROR_LINE() AS ErrorLine,
-    ERROR_MESSAGE() AS ErrorMessage;
-END CATCH  
+ BEGIN
+ declare @archive varchar(30)
+if(@archive!=0)
+UPDATE  Note 
+ SET Archive=0
+ where NotesID = @NotesID   
+	   ELSE
+	   UPDATE  Note 
+ SET Archive=1
+ where NotesID = @NotesID 
+ END
 
-exec spArchieve
-1
-
-
+ select * from Note
 --Procedure to check isPin in notes tables
 Alter procedure spPin
 (
@@ -332,6 +326,33 @@ END CATCH
 
 exec spPin
 1
+
+
+Alter procedure spArchive
+(
+@NotesID int
+)
+As 
+ BEGIN
+ declare @archive varchar(30)
+if(@archive!=0)
+UPDATE  Note 
+ SET Archive=0
+ where NotesID = @NotesID   
+	   ELSE
+	   UPDATE  Note 
+ SET Archive=1
+ where NotesID = @NotesID 
+ END
+END
+
+
+
+
+
+
+
+
 --Procedure to check isTrash in notes tables
 Alter procedure spTrash
 (
@@ -390,6 +411,23 @@ END CATCH
 exec spColor
 6,'#FFC0CB'
 
+--Procedure to add Reminder in notes tables
+
+CREATE PROCEDURE spReminder
+@UserId int,
+@AddReminder varchar(50),
+@ModifiedDateTime DATETIME
+AS  
+BEGIN  
+ UPDATE  Note 
+ SET Reminder=@AddReminder,
+ ModifiedDate=@ModifiedDateTime
+ where UserId = @UserId
+END
+
+
+
+------NOte label Table
 
 
 create table NoteLabel(
@@ -406,6 +444,7 @@ select * from NoteLabel
 
 
 insert into NoteLabel (labelName,UserId,noteId)values('Books',1,1)
+insert into NoteLabel (labelName,UserId,noteId)values('Movies',1,1)
 insert into NoteLabel (labelName,UserId,noteId,modifiedDate) values('Grocery',1,1,SYSDATETIME())
 
 
@@ -427,15 +466,16 @@ exec spGetAllLabel
 
 
 
-create procedure spAddLabel
+alter procedure spAddLabel
 (
+@labelId int,
 @labelName varchar(50),
 @userId int,
 @noteId int 
 )
 As
 Begin try
-insert into NoteLabel(labelName,userId,noteId)values(@labelName,@userId,@noteId)
+insert into NoteLabel(labelId,userId,noteId)values(@labelId,@labelName,@userId,@noteId)
 end try
 Begin catch
 SELECT 
@@ -447,7 +487,7 @@ SELECT
 END CATCH
 
 exec spAddLabel 
-'Shopping',2,1
+'Excercise',2,1
 
 
 Alter procedure spUpdateLabel
@@ -498,3 +538,155 @@ END CATCH
 
 exec spDeleteLabel
 5
+
+
+select * from UserInfo
+	select * from Note
+select * from NoteLabel
+
+SET IDENTITY_INSERT Note ON  
+insert into Note (NotesId,Title,Description,Reminder,UserId,color,trash,archive,pin,CreatedDate,ModifiedDate)values
+(7,'Shopping','Clothing','alert at 3',1,'#FFC0CB',1,1,1,SYSDATETIME(),SYSDATETIME())
+
+SET IDENTITY_INSERT NoteLabel ON  
+insert into NoteLabel (labelId,labelName,UserId,noteId,registeredDate,modifiedDate)values
+(7,'Shopping',1,1,SYSDATETIME(),SYSDATETIME())
+
+
+select UserInfo.UserId,UserInfo.Email,UserInfo.FirstName,UserInfo.LastName,Note.NotesId,Note.Title,NoteLabel.labelName
+from UserInfo inner join Note on UserInfo.UserId=Note.NotesId inner join NoteLabel on Note.NotesId=NoteLabel.labelId
+
+
+
+select Note.NotesId,Note.Title,Note.Description,NoteLabel.labelId,NoteLabel.labelName
+ from Note full outer join NoteLabel on Note.NotesId=NoteLabel.labelId 
+
+
+ Update UserInfo 
+ set
+ UserInfo.UserId=Note.NotesId
+ from UserInfo inner Join Note on UserInfo.UserId=Note.NotesId inner join NoteLabel on Note.NotesId=NoteLabel.labelId
+
+ INSERT INTO Note(Title,color,archive,pin) 
+SELECT O.Title,O.Color  FROM UserInfo U INNER JOIN Note O ON  U.UserId = O.NotesId inner join NoteLabel P on O.NotesId=P.labelId
+
+
+alter procedure spcollaboration     
+(      
+       @UserId int
+)     
+as       
+begin try      
+
+select UserInfo.UserId,UserInfo.Email,UserInfo.FirstName,UserInfo.LastName,Note.NotesId,Note.Title,NoteLabel.labelName
+from UserInfo inner join Note on UserInfo.UserId=Note.NotesId inner join NoteLabel on Note.NotesId=NoteLabel.labelId
+
+End try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spcollaboration
+7
+
+
+
+----collab Table
+
+Create table Collab(
+CollabId int identity(1,1) primary key,
+Email varchar(50),
+UserId int foreign key references UserInfo(UserId),
+NoteId int foreign key references Note(NotesId),
+registeredDate datetime default GETDATE(),
+modifiedDate datetime null
+)
+ 
+
+insert into Collab (EmailID,UserId,NoteId,registeredDate,modifiedDate) values('vic@gmail.com',3,1,SYSDATETIME(),GETDATE())
+insert into Collab (EmailID,UserId,NoteId,registeredDate,modifiedDate) values('Kir@gmail.com',1,1,SYSDATETIME(),GETDATE())
+ select * from Collab
+
+ ----SP for addcollab
+
+ alter procedure spAddCollab
+(
+@Email varchar(50),
+@UserId int,
+@noteId int 
+)
+As
+Begin try
+ 
+ insert into Collab (EmailID,UserId,NoteId) values (@Email,@UserId, @noteId)
+
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+exec spAddCollab 
+'Jane@gmail.com',1,1
+
+
+----
+select * from UserInfo
+
+SELECT        dbo.Collab.CollabId, dbo.Note.NotesId, dbo.UserInfo.UserId, dbo.UserInfo.Email, dbo.Note.Title
+FROM            dbo.Collab INNER JOIN
+                         dbo.Note ON dbo.Collab.NoteId = dbo.Note.NotesId INNER JOIN
+                         dbo.UserInfo ON dbo.Collab.UserId = dbo.UserInfo.UserId AND dbo.Note.UserId = dbo.UserInfo.UserId
+
+
+--SP for remove Collab
+
+create procedure spRemoveCollab
+(
+@collabEmail varchar(50),
+@userId int,
+@noteId int 
+)
+As
+Begin try
+delete from Collab where EmailID=@collabEmail and NoteId=@noteId and UserId=@userId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+---sp to getallCollab
+Create procedure spGetCollabNote
+(
+@noteId int,
+@userId int
+)
+As
+Begin try
+SELECT        dbo.Collab.CollabId, dbo.Note.NotesId, dbo.UserInfo.UserId, dbo.UserInfo.Email, dbo.Note.Title
+FROM            dbo.Collab INNER JOIN
+                         dbo.Note ON dbo.Collab.NoteId = dbo.Note.NotesId INNER JOIN
+                         dbo.UserInfo ON dbo.Collab.UserId = dbo.UserInfo.UserId AND dbo.Note.UserId = dbo.UserInfo.UserId
+						 end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH

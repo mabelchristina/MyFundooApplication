@@ -8,7 +8,7 @@ namespace BusinessManager.Interfaces
 {
     public interface IUserBL
     {
-        List<User> GetAllUsers();
+       Task<List<User>> GetAllUsers();
         public string UserLogin(Login login);
         public User UserRegister(User user);
 

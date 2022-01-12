@@ -8,7 +8,7 @@ namespace RepositoryLayer.Interfaces
 {
     public interface IUserRL
     {
-        public List<User> GetUsers();
+        public Task<List<User>> GetAllUsers();
         public string UserLogin(Login login);
         public User UserRegister(User user);
 
